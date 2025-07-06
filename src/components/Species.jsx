@@ -150,6 +150,42 @@ const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpec
 };
 
 const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies, speciesSuggestions, selectedSpecies, setSelectedSpecies, speciesSelectionConfirmed, setSpeciesSelectionConfirmed, transformSpeciesData }) => {
+    // Helper function to format harvest months
+    const formatHarvestMonths = (months) => {
+        if (!months || months.length === 0) return 'N/A';
+        if (months.length > 6) return 'Year-round';
+        return months.join(', ');
+    };
+
+    // Handle species selection from dropdown
+    const handleSpeciesSelection = (layer, index, selectedSpeciesName) => {
+        if (!selectedSpeciesName || selectedSpeciesName === '') return;
+        
+        // Find the selected species in the database
+        const layerSpecies = speciesSuggestions[layer] || [];
+        const selectedSpec = layerSpecies.find(spec => spec.name === selectedSpeciesName);
+        
+        if (selectedSpec) {
+            // Transform the database species to match component format
+            const transformedSpec = transformSpeciesData ? transformSpeciesData(selectedSpec) : selectedSpec;
+            
+            // Update the plant with database values
+            const newPlants = { ...plants };
+            newPlants[layer][index] = {
+                ...newPlants[layer][index],
+                name: transformedSpec.name,
+                mature_height: transformedSpec.mature_height,
+                years_to_fruit: transformedSpec.years_to_fruit,
+                harvest_month: transformedSpec.harvest_month,
+                scientific_name: transformedSpec.scientific_name,
+                native: transformedSpec.native,
+                economic_value: transformedSpec.economic_value,
+                uses: transformedSpec.uses,
+                nutritional_benefits: transformedSpec.nutritional_benefits
+            };
+            setPlants(newPlants);
+        }
+    };
     
     const handleConfirmSpeciesSelection = (plantsWithCounts) => {
         setPlants(plantsWithCounts);
@@ -213,13 +249,32 @@ const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies
                             {plantList.map((plant, index) => (
                                 <tr key={index} className="border-b border-green-200 hover:bg-green-50 transition-colors">
                                     <td className="p-4">
-                                        <input
-                                            type="text"
-                                            value={plant.name}
-                                            onChange={(e) => updatePlantProperty(layer, index, 'name', e.target.value)}
-                                            className="w-full px-3 py-2 border-2 border-green-300 rounded-lg text-green-900 focus:border-green-500 focus:outline-none font-medium"
-                                            style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
-                                        />
+                                        {plant.name === 'New Species' ? (
+                                            <select
+                                                value=""
+                                                onChange={(e) => handleSpeciesSelection(layer, index, e.target.value)}
+                                                className="w-full px-3 py-2 border-2 border-green-300 rounded-lg text-green-900 focus:border-green-500 focus:outline-none font-medium"
+                                                style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
+                                            >
+                                                <option value="">Select a species...</option>
+                                                {(speciesSuggestions[layer] || []).map((spec, specIndex) => (
+                                                    <option key={specIndex} value={spec.name}>
+                                                        {spec.name} ({spec.scientific_name})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <div className="flex flex-col">
+                                                <span className="font-medium text-green-900" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                                                    {plant.name}
+                                                </span>
+                                                {plant.scientific_name && (
+                                                    <span className="text-sm text-green-600 italic" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                                                        {plant.scientific_name}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
                                     </td>
                                     <td className="p-4">
                                         <input
@@ -250,26 +305,14 @@ const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies
                                         />
                                     </td>
                                     <td className="p-4">
-                                        <select
-                                            value={plant.harvest_month}
+                                        <input
+                                            type="text"
+                                            value={plant.harvest_month || 'N/A'}
                                             onChange={(e) => updatePlantProperty(layer, index, 'harvest_month', e.target.value)}
                                             className="w-full px-3 py-2 border-2 border-green-300 rounded-lg text-green-900 focus:border-green-500 focus:outline-none font-medium"
                                             style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
-                                        >
-                                            <option value="">N/A</option>
-                                            <option value="January">January</option>
-                                            <option value="February">February</option>
-                                            <option value="March">March</option>
-                                            <option value="April">April</option>
-                                            <option value="May">May</option>
-                                            <option value="June">June</option>
-                                            <option value="July">July</option>
-                                            <option value="August">August</option>
-                                            <option value="September">September</option>
-                                            <option value="October">October</option>
-                                            <option value="November">November</option>
-                                            <option value="December">December</option>
-                                        </select>
+                                            placeholder="e.g., June, July, August or Year-round"
+                                        />
                                     </td>
                                     <td className="p-4 text-center">
                                         <button

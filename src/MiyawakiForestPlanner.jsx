@@ -10,60 +10,48 @@ import Blueprint from './components/Blueprint';
 import Export from './components/Export';
 import speciesDatabase from './data/species-database.json';
 
-// Base plant templates with Bangladesh species (proportions maintained) - moved outside component
-const basePlantTemplates = {
-        canopy: [
-            { name: 'Mango (Am)', count: 25, mature_height: 20, years_to_fruit: 5, harvest_month: 'June-Aug' },
-            { name: 'Jackfruit (Kathal)', count: 20, mature_height: 18, years_to_fruit: 7, harvest_month: 'June-Sept' },
-            { name: 'Coconut (Narikel)', count: 15, mature_height: 15, years_to_fruit: 6, harvest_month: 'Year-round' },
-            { name: 'Jamun', count: 15, mature_height: 20, years_to_fruit: 8, harvest_month: 'May-July' },
-            { name: 'Tamarind (Tetul)', count: 10, mature_height: 18, years_to_fruit: 10, harvest_month: 'Feb-Mar' },
-            { name: 'Mahogany', count: 15, mature_height: 25, years_to_fruit: 0, harvest_month: 'N/A' },
-            { name: 'Neem', count: 20, mature_height: 20, years_to_fruit: 0, harvest_month: 'N/A' },
-            { name: 'Rain Tree', count: 10, mature_height: 25, years_to_fruit: 0, harvest_month: 'N/A' },
-            { name: 'Hijol', count: 10, mature_height: 15, years_to_fruit: 0, harvest_month: 'N/A' },
-            { name: 'Bamboo', count: 10, mature_height: 20, years_to_fruit: 0, harvest_month: 'N/A' }
-        ],
-        subcanopy: [
-            { name: 'Guava (Peyara)', count: 30, mature_height: 8, years_to_fruit: 3, harvest_month: 'July-Sept' },
-            { name: 'Litchi', count: 25, mature_height: 10, years_to_fruit: 5, harvest_month: 'June-July' },
-            { name: 'Cashew (Kaju)', count: 20, mature_height: 9, years_to_fruit: 4, harvest_month: 'Mar-May' },
-            { name: 'Custard Apple', count: 15, mature_height: 6, years_to_fruit: 4, harvest_month: 'Aug-Oct' },
-            { name: 'Star Fruit', count: 20, mature_height: 7, years_to_fruit: 3, harvest_month: 'Nov-Jan' },
-            { name: 'Sapota', count: 15, mature_height: 8, years_to_fruit: 5, harvest_month: 'May-Sept' },
-            { name: 'Moringa (Sajina)', count: 35, mature_height: 6, years_to_fruit: 1, harvest_month: 'Year-round' },
-            { name: 'Papaya', count: 25, mature_height: 5, years_to_fruit: 1, harvest_month: 'Year-round' },
-            { name: 'Banana', count: 30, mature_height: 4, years_to_fruit: 1, harvest_month: 'Year-round' },
-            { name: 'Drumstick', count: 15, mature_height: 8, years_to_fruit: 2, harvest_month: 'Feb-Apr' },
-            { name: 'Curry Leaf', count: 20, mature_height: 4, years_to_fruit: 2, harvest_month: 'Year-round' }
-        ],
-        shrub: [
-            { name: 'Indian Jujube (Boroi)', count: 40, mature_height: 3, years_to_fruit: 2, harvest_month: 'Feb-Mar' },
-            { name: 'Indian Gooseberry', count: 30, mature_height: 3, years_to_fruit: 3, harvest_month: 'Oct-Jan' },
-            { name: 'Mulberry', count: 25, mature_height: 3, years_to_fruit: 2, harvest_month: 'Mar-May' },
-            { name: 'Rose Apple', count: 20, mature_height: 3, years_to_fruit: 3, harvest_month: 'May-June' },
-            { name: 'Chili varieties', count: 50, mature_height: 1, years_to_fruit: 0.5, harvest_month: 'Year-round' },
-            { name: 'Brinjal (Eggplant)', count: 40, mature_height: 1, years_to_fruit: 0.5, harvest_month: 'Year-round' },
-            { name: 'Okra (Bhindi)', count: 30, mature_height: 1.5, years_to_fruit: 0.3, harvest_month: 'Summer' },
-            { name: 'Tomato', count: 35, mature_height: 1, years_to_fruit: 0.3, harvest_month: 'Winter' },
-            { name: 'Lemon/Lime', count: 25, mature_height: 2.5, years_to_fruit: 3, harvest_month: 'Year-round' },
-            { name: 'Tulsi (Holy Basil)', count: 30, mature_height: 0.5, years_to_fruit: 0.2, harvest_month: 'Year-round' },
-            { name: 'Aloe Vera', count: 26, mature_height: 0.5, years_to_fruit: 0, harvest_month: 'N/A' }
-        ],
-        ground: [
-            { name: 'Spinach varieties', count: 40, mature_height: 0.3, years_to_fruit: 0.2, harvest_month: 'Winter' },
-            { name: 'Amaranth (Lal Shak)', count: 35, mature_height: 0.4, years_to_fruit: 0.2, harvest_month: 'Year-round' },
-            { name: 'Bottle Gourd leaves', count: 20, mature_height: 0.3, years_to_fruit: 0.3, harvest_month: 'Summer' },
-            { name: 'Water Spinach', count: 25, mature_height: 0.3, years_to_fruit: 0.2, harvest_month: 'Monsoon' },
-            { name: 'Ginger', count: 30, mature_height: 0.5, years_to_fruit: 0.8, harvest_month: 'Oct-Dec' },
-            { name: 'Turmeric', count: 30, mature_height: 0.5, years_to_fruit: 0.8, harvest_month: 'Jan-Mar' },
-            { name: 'Coriander', count: 25, mature_height: 0.3, years_to_fruit: 0.2, harvest_month: 'Winter' },
-            { name: 'Mint', count: 20, mature_height: 0.3, years_to_fruit: 0.2, harvest_month: 'Year-round' },
-            { name: 'Sweet Potato', count: 15, mature_height: 0.3, years_to_fruit: 0.5, harvest_month: 'Oct-Dec' },
-            { name: 'Pumpkin', count: 8, mature_height: 0.3, years_to_fruit: 0.3, harvest_month: 'Winter' },
-            { name: 'Cucumber', count: 3, mature_height: 0.3, years_to_fruit: 0.2, harvest_month: 'Summer' }
-        ]
+// Create base plant templates from database with predefined counts for balanced ecosystem
+const createBasePlantTemplates = () => {
+    const currentRegion = 'bangladesh';
+    const speciesData = speciesDatabase.regions[currentRegion].layers;
+    
+    // Helper function to format harvest months
+    const formatHarvestMonths = (months) => {
+        if (!months || months.length === 0) return 'N/A';
+        if (months.length > 6) return 'Year-round';
+        return months.join(', ');
     };
+    
+    // Predefined counts for balanced ecosystem (these will be scaled based on area)
+    const predefinedCounts = {
+        canopy: [25, 20, 15, 15, 10, 15, 20, 10, 10, 10], // Total: 150
+        subcanopy: [30, 25, 20, 15, 20, 15, 35, 25, 30, 15, 20], // Total: 250
+        shrub: [40, 30, 25, 20, 50, 40, 30, 35, 25, 30, 26], // Total: 351
+        ground: [40, 35, 20, 25, 30, 30, 25, 20, 15, 8, 3] // Total: 251
+    };
+    
+    const templates = {};
+    
+    Object.entries(speciesData).forEach(([layer, species]) => {
+        templates[layer] = species.map((spec, index) => ({
+            name: spec.name,
+            count: predefinedCounts[layer]?.[index] || 10, // Default count if not specified
+            mature_height: spec.mature_height,
+            years_to_fruit: spec.years_to_fruit,
+            harvest_month: formatHarvestMonths(spec.harvest_months),
+            scientific_name: spec.scientific_name,
+            native: spec.native,
+            economic_value: spec.economic_value,
+            uses: spec.uses,
+            nutritional_benefits: spec.nutritional_benefits
+        }));
+    });
+    
+    return templates;
+};
+
+// Base plant templates with Bangladesh species (proportions maintained) - moved outside component
+const basePlantTemplates = createBasePlantTemplates();
 
 const MiyawakiForestPlanner = () => {
     // Load species data from JSON database (defaulting to Bangladesh region)
@@ -173,7 +161,7 @@ const MiyawakiForestPlanner = () => {
     // Add new plant species
     const addNewSpecies = (layer) => {
         const newPlants = { ...plants };
-        newPlants[layer].push({
+        newPlants[layer].unshift({
             name: 'New Species',
             count: 10,
             mature_height: 5,
