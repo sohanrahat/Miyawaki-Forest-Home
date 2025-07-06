@@ -159,6 +159,60 @@ export const searchSpeciesByName = (speciesDatabase, regionId, searchTerm) => {
     );
 };
 
+// Check for planting warnings
+export const checkForPlantingWarnings = (selectedPlants, siteSoilType) => {
+    const warnings = [];
+    const allPlants = Object.values(selectedPlants).flat();
+
+    // 1. Check for soil incompatibility
+    if (siteSoilType) {
+        allPlants.forEach(plant => {
+            if (plant.soil_types && !plant.soil_types.includes(siteSoilType)) {
+                warnings.push(`Warning: ${plant.name} may not thrive in ${siteSoilType} soil.`);
+            }
+        });
+    }
+
+    // 2. Check for negative companion plants
+    allPlants.forEach(plant1 => {
+        if (plant1.non_companion_plants && plant1.non_companion_plants.length > 0) {
+            allPlants.forEach(plant2 => {
+                if (plant1.id !== plant2.id) {
+                    if (plant1.non_companion_plants.includes(plant2.id)) {
+                        warnings.push(`Warning: ${plant1.name} and ${plant2.name} are not good companions and should not be planted together.`);
+                    }
+                }
+            });
+        }
+    });
+
+    return warnings;
+};
+
+// Get companion planting suggestions
+export const getCompanionSuggestions = (selectedPlants, allSpecies) => {
+    const suggestions = [];
+    const allSelectedIds = Object.values(selectedPlants).flat().map(p => p.id);
+
+    const allAvailablePlants = Object.values(allSpecies).flat();
+
+    allSelectedIds.forEach(plantId => {
+        const plant = allAvailablePlants.find(p => p.id === plantId);
+        if (plant && plant.companion_plants) {
+            plant.companion_plants.forEach(companionId => {
+                if (!allSelectedIds.includes(companionId)) {
+                    const companionPlant = allAvailablePlants.find(p => p.id === companionId);
+                    if (companionPlant && !suggestions.some(s => s.id === companionPlant.id)) {
+                        suggestions.push(companionPlant);
+                    }
+                }
+            });
+        }
+    });
+
+    return suggestions;
+};
+
 export default {
     getAvailableRegions,
     getRegionInfo,

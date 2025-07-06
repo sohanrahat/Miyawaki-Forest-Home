@@ -11,8 +11,9 @@ const SpeciesDetailModal = ({ species, onClose }) => {
     const valueStyle = "text-green-900";
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
-            <div className="bg-white rounded-2xl shadow-2xl p-8 m-4 max-w-lg w-full relative" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 flex items-center justify-center z-50" onClick={onClose}>
+            <div className="absolute inset-0 bg-black/50"></div> {/* Blur layer */}
+            <div className="bg-white rounded-2xl shadow-2xl p-8 m-4 max-w-lg w-full relative z-10" onClick={e => e.stopPropagation()}>
                 <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
                 <h2 className="text-3xl font-bold text-green-800 mb-4" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>{species.name}</h2>
                 <p className="text-md italic text-green-600 mb-6" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>{species.scientific_name}</p>
@@ -180,13 +181,21 @@ const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpec
     );
 };
 
-const Species = ({ plants, setPlants, speciesSuggestions }) => {
+import { checkForPlantingWarnings, getCompanionSuggestions } from '../utils/speciesUtils';
+
+const Species = ({ plants, setPlants, speciesSuggestions, projectInfo }) => {
     const [speciesSelectionConfirmed, setSpeciesSelectionConfirmed] = useState(false);
     const [selectedSpecies, setSelectedSpecies] = useState({ canopy: [], subcanopy: [], shrub: [], ground: [] });
+    const [warnings, setWarnings] = useState([]);
+    const [suggestions, setSuggestions] = useState([]);
 
     const handleConfirmSpeciesSelection = (plantsWithCounts) => {
         setPlants(plantsWithCounts);
         setSpeciesSelectionConfirmed(true);
+        const warnings = checkForPlantingWarnings(plantsWithCounts, projectInfo.soilType);
+        setWarnings(warnings);
+        const suggestions = getCompanionSuggestions(plantsWithCounts, speciesSuggestions);
+        setSuggestions(suggestions);
     };
 
     if (!speciesSelectionConfirmed) {
@@ -242,6 +251,29 @@ const Species = ({ plants, setPlants, speciesSuggestions }) => {
     return (
     <div>
         <h2 className="text-2xl font-bold mb-6 text-green-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Species Management</h2>
+
+        {warnings.length > 0 && (
+            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+                <p className="font-bold">Warnings</p>
+                <ul>
+                    {warnings.map((warning, index) => (
+                        <li key={index}>{warning}</li>
+                    ))}
+                </ul>
+            </div>
+        )}
+
+        {suggestions.length > 0 && (
+            <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+                <p className="font-bold">Companion Planting Suggestions</p>
+                <p>Consider adding these plants to improve your forest ecosystem:</p>
+                <ul>
+                    {suggestions.map((suggestion, index) => (
+                        <li key={index}>{suggestion.name}</li>
+                    ))}
+                </ul>
+            </div>
+        )}
 
         {Object.entries(plants).map(([layer, plantList]) => (
             <div key={layer} className="mb-8 bg-white p-6 rounded-xl border-2 border-green-200 shadow-lg">

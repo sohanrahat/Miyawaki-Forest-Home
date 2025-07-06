@@ -185,6 +185,7 @@ const MiyawakiForestPlanner = () => {
                             plants={plants}
                             setPlants={setPlants}
                             speciesSuggestions={speciesData}
+                            projectInfo={projectInfo}
                         />
                     )}
                     {activeTab === 'timeline' && (
