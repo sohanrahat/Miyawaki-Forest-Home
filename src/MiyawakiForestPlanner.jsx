@@ -79,6 +79,7 @@ const MiyawakiForestPlanner = () => {
     });
 
     const [siteInfoConfirmed, setSiteInfoConfirmed] = useState(false);
+    const [speciesSelectionConfirmed, setSpeciesSelectionConfirmed] = useState(false);
     const [costs, setCosts] = useState({
         plantCostPerUnit: 60,
         soilAmendmentPerM2: 100,
@@ -205,6 +206,8 @@ const MiyawakiForestPlanner = () => {
                             setPlants={setPlants}
                             speciesSuggestions={speciesData}
                             projectInfo={projectInfo}
+                            speciesSelectionConfirmed={speciesSelectionConfirmed}
+                            setSpeciesSelectionConfirmed={setSpeciesSelectionConfirmed}
                         />
                     )}
                     {activeTab === 'timeline' && (
@@ -218,6 +221,7 @@ const MiyawakiForestPlanner = () => {
                             totalPlants={totalPlants}
                             projectInfo={projectInfo}
                             plants={plants}
+                            speciesSelectionConfirmed={speciesSelectionConfirmed}
                         />
                     )}
                     {activeTab === 'blueprint' && <Blueprint totalPlants={totalPlants} />}

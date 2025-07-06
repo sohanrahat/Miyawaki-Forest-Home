@@ -184,8 +184,7 @@ const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpec
 
 import { filterSpecies } from '../utils/speciesUtils';
 
-const Species = ({ plants, setPlants, speciesSuggestions, projectInfo }) => {
-    const [speciesSelectionConfirmed, setSpeciesSelectionConfirmed] = useState(false);
+const Species = ({ plants, setPlants, speciesSuggestions, projectInfo, speciesSelectionConfirmed, setSpeciesSelectionConfirmed }) => {
     const [selectedSpecies, setSelectedSpecies] = useState({ canopy: [], subcanopy: [], shrub: [], ground: [] });
     const [warnings, setWarnings] = useState([]);
     const [suggestions, setSuggestions] = useState([]);

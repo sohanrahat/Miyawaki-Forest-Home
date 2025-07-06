@@ -1,6 +1,38 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 
-const Costs = ({ costs, setCosts, totalPlants, projectInfo, plants }) => {
+const Costs = ({ costs, setCosts, totalPlants, projectInfo, plants, speciesSelectionConfirmed }) => {
+    // Only show costs if user has provided land area AND explicitly selected species
+    const hasLandArea = projectInfo.plantingArea && projectInfo.plantingArea > 0;
+    
+    // The key insight: we need to check if species selection was confirmed by the user
+    // If speciesSelectionConfirmed is passed as prop, use it. Otherwise, assume not confirmed.
+    const hasUserConfirmedSpecies = speciesSelectionConfirmed === true;
+    
+    if (!hasLandArea || !hasUserConfirmedSpecies) {
+        return (
+            <div className="text-center py-12">
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-8 max-w-md mx-auto">
+                    <h2 className="text-2xl font-bold mb-4 text-blue-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                        Cost Analysis
+                    </h2>
+                    <p className="text-blue-700 mb-2" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                        Please complete the following steps to view cost analysis:
+                    </p>
+                    <div className="space-y-2 text-left">
+                        <div className={`flex items-center gap-2 ${hasLandArea ? 'text-green-700' : 'text-gray-600'}`}>
+                            <span>{hasLandArea ? '✓' : '○'}</span>
+                            <span style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Enter land area in Project Info</span>
+                        </div>
+                        <div className={`flex items-center gap-2 ${hasUserConfirmedSpecies ? 'text-green-700' : 'text-gray-600'}`}>
+                            <span>{hasUserConfirmedSpecies ? '✓' : '○'}</span>
+                            <span style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Select and confirm species in Species tab</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     // Calculate detailed species costs using actual plant prices
     const calculateSpeciesCosts = () => {
         const layerCosts = {};
