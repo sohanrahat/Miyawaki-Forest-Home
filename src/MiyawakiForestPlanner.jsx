@@ -43,7 +43,8 @@ const createBasePlantTemplates = () => {
             native: spec.native,
             economic_value: spec.economic_value,
             uses: spec.uses,
-            nutritional_benefits: spec.nutritional_benefits
+            nutritional_benefits: spec.nutritional_benefits,
+            price: spec.price || 60 // Default price if not specified in database
         }));
     });
     
@@ -68,7 +69,8 @@ const MiyawakiForestPlanner = () => {
         native: species.native,
         economic_value: species.economic_value,
         uses: species.uses,
-        nutritional_benefits: species.nutritional_benefits
+        nutritional_benefits: species.nutritional_benefits,
+        price: species.price || 60 // Include price from database
     });
 
     // Species selection state
@@ -247,6 +249,7 @@ const MiyawakiForestPlanner = () => {
                             setProjectInfo={setProjectInfo}
                             siteInfoConfirmed={siteInfoConfirmed}
                             setSiteInfoConfirmed={setSiteInfoConfirmed}
+                            setActiveTab={setActiveTab}
                         />
                     )}
                     {activeTab === 'species' && (
@@ -274,6 +277,7 @@ const MiyawakiForestPlanner = () => {
                             costBreakdown={costBreakdown}
                             totalPlants={totalPlants}
                             projectInfo={projectInfo}
+                            plants={plants}
                         />
                     )}
                     {activeTab === 'blueprint' && <Blueprint totalPlants={totalPlants} />}

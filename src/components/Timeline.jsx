@@ -75,30 +75,43 @@ const Timeline = ({ harvestTimeline, plants }) => (
         <div className="mt-8 p-6 bg-white rounded-xl border-2 border-green-200 shadow-lg">
             <h3 className="text-lg font-semibold mb-6 text-green-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Production Timeline</h3>
             <div className="space-y-4">
-                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                    <div className="flex justify-between items-center">
-                        <span className="font-semibold text-green-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Immediate (0-6 months):</span>
-                        <span className="font-medium text-green-700" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Herbs, leafy vegetables, radishes</span>
-                    </div>
-                </div>
-                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                    <div className="flex justify-between items-center">
-                        <span className="font-semibold text-green-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Short-term (6-18 months):</span>
-                        <span className="font-medium text-green-700" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Moringa, papaya, bananas, chilies</span>
-                    </div>
-                </div>
-                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                    <div className="flex justify-between items-center">
-                        <span className="font-semibold text-green-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Medium-term (2-4 years):</span>
-                        <span className="font-medium text-green-700" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Guava, jujube, mulberry, lemons</span>
-                    </div>
-                </div>
-                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                    <div className="flex justify-between items-center">
-                        <span className="font-semibold text-green-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Long-term (5+ years):</span>
-                        <span className="font-medium text-green-700" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Mango, jackfruit, litchi, coconuts</span>
-                    </div>
-                </div>
+                {(() => {
+                    // Categorize plants by years to fruit
+                    const timeCategories = {
+                        immediate: { label: 'Immediate (0-6 months)', plants: [], color: 'bg-green-50' },
+                        shortTerm: { label: 'Short-term (6-18 months)', plants: [], color: 'bg-yellow-50' },
+                        mediumTerm: { label: 'Medium-term (2-4 years)', plants: [], color: 'bg-orange-50' },
+                        longTerm: { label: 'Long-term (5+ years)', plants: [], color: 'bg-red-50' }
+                    };
+
+                    // Sort plants into categories
+                    Object.values(plants).forEach(plantList => {
+                        plantList.forEach(plant => {
+                            if (plant.years_to_fruit <= 0.5) {
+                                timeCategories.immediate.plants.push(plant.name);
+                            } else if (plant.years_to_fruit <= 1.5) {
+                                timeCategories.shortTerm.plants.push(plant.name);
+                            } else if (plant.years_to_fruit <= 4) {
+                                timeCategories.mediumTerm.plants.push(plant.name);
+                            } else if (plant.years_to_fruit > 4) {
+                                timeCategories.longTerm.plants.push(plant.name);
+                            }
+                        });
+                    });
+
+                    return Object.values(timeCategories).map((category, index) => (
+                        <div key={index} className={`p-4 ${category.color} rounded-lg border border-green-200`}>
+                            <div className="flex justify-between items-center">
+                                <span className="font-semibold text-green-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                                    {category.label}:
+                                </span>
+                                <span className="font-medium text-green-700 text-right" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                                    {category.plants.length > 0 ? category.plants.join(', ') : 'None selected'}
+                                </span>
+                            </div>
+                        </div>
+                    ));
+                })()}
             </div>
         </div>
     </div>

@@ -27,7 +27,8 @@
             "economic_value": "high",
             "uses": ["fruit", "timber", "shade"],
             "nutritional_benefits": ["vitamin_c", "vitamin_a", "fiber"],
-            "growth_rate": "medium"
+            "growth_rate": "medium",
+            "price": 120
           },
           {
             "id": "jackfruit_bd",
@@ -43,7 +44,8 @@
             "economic_value": "high",
             "uses": ["fruit", "timber", "latex"],
             "nutritional_benefits": ["vitamin_c", "protein", "potassium"],
-            "growth_rate": "medium"
+            "growth_rate": "medium",
+            "price": 100
           },
           {
             "id": "coconut_bd",
@@ -59,7 +61,8 @@
             "economic_value": "very_high",
             "uses": ["fruit", "oil", "fiber", "construction"],
             "nutritional_benefits": ["healthy_fats", "electrolytes"],
-            "growth_rate": "medium"
+            "growth_rate": "medium",
+            "price": 150
           },
           {
             "id": "jamun_bd",
@@ -75,7 +78,8 @@
             "economic_value": "medium",
             "uses": ["fruit", "medicinal", "timber"],
             "nutritional_benefits": ["antioxidants", "vitamin_c"],
-            "growth_rate": "fast"
+            "growth_rate": "fast",
+            "price": 80
           },
           {
             "id": "tamarind_bd",

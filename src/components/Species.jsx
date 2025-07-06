@@ -181,7 +181,8 @@ const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies
                 native: transformedSpec.native,
                 economic_value: transformedSpec.economic_value,
                 uses: transformedSpec.uses,
-                nutritional_benefits: transformedSpec.nutritional_benefits
+                nutritional_benefits: transformedSpec.nutritional_benefits,
+                price: transformedSpec.price || 60 // Default price if not in database
             };
             setPlants(newPlants);
         }
@@ -242,6 +243,7 @@ const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies
                                 <th className="text-center p-4 text-green-800 font-semibold" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Height (m)</th>
                                 <th className="text-center p-4 text-green-800 font-semibold" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Years to Fruit</th>
                                 <th className="text-center p-4 text-green-800 font-semibold" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Harvest</th>
+                                <th className="text-center p-4 text-green-800 font-semibold" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Price (৳)</th>
                                 <th className="text-center p-4 text-green-800 font-semibold" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Actions</th>
                             </tr>
                         </thead>
@@ -313,6 +315,21 @@ const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies
                                             style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
                                             placeholder="e.g., June, July, August or Year-round"
                                         />
+                                    </td>
+                                    <td className="p-4">
+                                        <div className="flex items-center">
+                                            <span className="text-green-700 font-medium mr-1" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>৳</span>
+                                            <input
+                                                type="number"
+                                                value={plant.price || 60}
+                                                onChange={(e) => updatePlantProperty(layer, index, 'price', parseInt(e.target.value) || 60)}
+                                                className="w-20 px-3 py-2 border-2 border-green-300 rounded-lg text-green-900 focus:border-green-500 focus:outline-none font-medium text-center"
+                                                min="0"
+                                            />
+                                        </div>
+                                        <p className="text-xs text-green-600 mt-1" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                                            {plant.price && plant.price > 60 ? 'Database price' : 'Default price'}
+                                        </p>
                                     </td>
                                     <td className="p-4 text-center">
                                         <button

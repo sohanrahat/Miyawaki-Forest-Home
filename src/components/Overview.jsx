@@ -4,7 +4,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { GiWaterDrop, GiTreeGrowth } from 'react-icons/gi';
 import { FaMapMarkerAlt, FaCheck, FaEdit } from 'react-icons/fa';
 
-const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, setSiteInfoConfirmed }) => {
+const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, setSiteInfoConfirmed, setActiveTab }) => {
     const [showEditForm, setShowEditForm] = useState(false);
     const [tempProjectInfo, setTempProjectInfo] = useState(projectInfo);
     const [errors, setErrors] = useState({});
@@ -347,6 +347,26 @@ const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, set
                     </div>
                 </div>
             </div>
+        </div>
+
+        {/* Next Step: Species Selection */}
+        <div className="mt-8 p-6 bg-gradient-to-r from-green-500 to-green-600 rounded-xl shadow-lg text-white text-center">
+            <h3 className="text-xl font-bold mb-3" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                🌱 Ready to Build Your Forest?
+            </h3>
+            <p className="mb-6 text-green-100" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                Your site is configured! Now let's select the perfect plant species for your {projectInfo.plantingArea}m² Miyawaki forest.
+            </p>
+            <button
+                onClick={() => setActiveTab('species')}
+                className="px-8 py-4 bg-white text-green-600 rounded-lg hover:bg-green-50 transition-colors font-bold text-lg shadow-md"
+                style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
+            >
+                🌿 Select Plant Species Now
+            </button>
+            <p className="mt-3 text-sm text-green-200" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                Choose from native Bangladesh species optimized for your climate
+            </p>
         </div>
 
         {/* Climate Considerations */}
