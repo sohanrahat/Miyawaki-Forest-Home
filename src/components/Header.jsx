@@ -64,34 +64,41 @@ const Header = ({ totalPlants, density, costBreakdown, projectInfo, plants, site
         <p className="text-green-600" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Interactive planning tool for your food forest</p>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <div className="bg-white p-5 rounded-xl border-2 border-green-300 shadow-lg hover:shadow-xl hover:border-green-400 transition-all duration-300">
-                <div className="flex items-center justify-between">
-                    <GiTreeGrowth className="text-green-500" size={28} />
-                    <span className="text-3xl font-bold text-green-900">{totalPlants}</span>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
+            {/* Card 1: Total Plants */}
+            <div className="bg-gradient-to-br from-green-100 to-white p-5 rounded-2xl border border-green-200 shadow-lg hover:shadow-2xl hover:border-green-400 transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center justify-center text-center h-full">
+                <span className="text-4xl font-bold text-green-900">{totalPlants}</span>
+                <div className="flex items-center mt-1">
+                    <GiTreeGrowth className="text-green-600 mr-2" size={20} />
+                    <p className="text-md text-green-800 font-semibold" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Total Plants</p>
                 </div>
-                <p className="text-sm text-green-800 mt-2 font-medium" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Total Plants</p>
             </div>
-            <div className="bg-white p-5 rounded-xl border-2 border-green-300 shadow-lg hover:shadow-xl hover:border-green-400 transition-all duration-300">
-                <div className="flex items-center justify-between">
-                    <MdGridOn className="text-green-500" size={28} />
-                    <span className="text-3xl font-bold text-green-900">{density}</span>
+
+            {/* Card 2: Plants/m² */}
+            <div className="bg-gradient-to-br from-green-100 to-white p-5 rounded-2xl border border-green-200 shadow-lg hover:shadow-2xl hover:border-green-400 transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center justify-center text-center h-full">
+                <span className="text-4xl font-bold text-green-900">{density}</span>
+                <div className="flex items-center mt-1">
+                    <MdGridOn className="text-green-600 mr-2" size={20} />
+                    <p className="text-md text-green-800 font-semibold" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Plants/m²</p>
                 </div>
-                <p className="text-sm text-green-800 mt-2 font-medium" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Plants/m²</p>
             </div>
-            <div className="bg-white p-5 rounded-xl border-2 border-green-300 shadow-lg hover:shadow-xl hover:border-green-400 transition-all duration-300">
-                <div className="flex items-center justify-between">
-                    <FaCoins className="text-green-500" size={28} />
-                    <span className="text-3xl font-bold text-green-900">৳{(costBreakdown.total / 1000).toFixed(0)}k</span>
+
+            {/* Card 3: Total Cost */}
+            <div className="bg-gradient-to-br from-green-100 to-white p-5 rounded-2xl border border-green-200 shadow-lg hover:shadow-2xl hover:border-green-400 transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center justify-center text-center h-full">
+                <span className="text-4xl font-bold text-green-900">৳{(costBreakdown.total / 1000).toFixed(0)}k</span>
+                <div className="flex items-center mt-1">
+                    <FaCoins className="text-green-600 mr-2" size={20} />
+                    <p className="text-md text-green-800 font-semibold" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Total Cost</p>
                 </div>
-                <p className="text-sm text-green-800 mt-2 font-medium" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Total Cost</p>
             </div>
-            <div className="bg-white p-5 rounded-xl border-2 border-green-300 shadow-lg hover:shadow-xl hover:border-green-400 transition-all duration-300">
-                <div className="flex items-center justify-between">
-                    <GiHourglass className="text-green-500" size={28} />
-                    <span className="text-3xl font-bold text-green-900">{yearsToSelfSustain}</span>
+
+            {/* Card 4: Years to Self-Sustain */}
+            <div className="bg-gradient-to-br from-green-100 to-white p-5 rounded-2xl border border-green-200 shadow-lg hover:shadow-2xl hover:border-green-400 transition-all duration-300 transform hover:-translate-y-1 flex flex-col items-center justify-center text-center h-full">
+                <span className="text-4xl font-bold text-green-900">{yearsToSelfSustain}</span>
+                <div className="flex items-center mt-1">
+                    <GiHourglass className="text-green-600 mr-2" size={20} />
+                    <p className="text-md text-green-800 font-semibold" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Years to Self-Sustain</p>
                 </div>
-                <p className="text-sm text-green-800 mt-2 font-medium" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Years to Self-Sustain</p>
             </div>
         </div>
     </div>

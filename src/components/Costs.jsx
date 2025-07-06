@@ -234,7 +234,7 @@ const Costs = ({ costs, setCosts, totalPlants, projectInfo, plants }) => {
                     <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
                         <div className="flex justify-between items-center">
                             <span className="text-yellow-800 font-semibold text-sm" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Cost per m²:</span>
-                            <span className="font-bold text-yellow-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>৳{Math.round(totalProjectCost / (projectInfo.plantingArea || 1))}</span>
+                            <span className="font-bold text-yellow-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>৳{Math.round(totalProjectCost / (projectInfo.totalArea || 1))}</span>
                         </div>
                     </div>
                 </div>
