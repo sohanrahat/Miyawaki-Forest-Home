@@ -69,7 +69,6 @@ const MiyawakiForestPlanner = () => {
         totalArea: '',
         pathwayArea: '',
         plantingArea: '',
-        location: '',
         soilType: '',
         annualRainfall: '',
         avgTemp: ''

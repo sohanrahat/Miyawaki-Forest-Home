@@ -19,18 +19,8 @@ const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, set
             newErrors.totalArea = 'Total area must be greater than 0';
         }
         
-        if (!tempProjectInfo.plantingArea || tempProjectInfo.plantingArea === '' || tempProjectInfo.plantingArea <= 0) {
-            newErrors.plantingArea = 'Planting area must be greater than 0';
-        }
-        
-        if (tempProjectInfo.plantingArea && tempProjectInfo.totalArea && 
-            Number(tempProjectInfo.plantingArea) > Number(tempProjectInfo.totalArea)) {
-            newErrors.plantingArea = 'Planting area cannot exceed total area';
-        }
-        
-        if (!tempProjectInfo.location || !tempProjectInfo.location.trim()) {
-            newErrors.location = 'Location is required';
-        }
+        // Planting area validation removed - it's auto-calculated based on Miyawaki principles
+        // Location field removed
         
         if (!tempProjectInfo.soilType) {
             newErrors.soilType = 'Soil type is required';
@@ -68,8 +58,28 @@ const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, set
     };
 
     const handleChange = (field, value) => {
-        setTempProjectInfo(prev => ({ ...prev, [field]: value }));
-        if (errors[field]) {
+        const newProjectInfo = { ...tempProjectInfo, [field]: value };
+        
+        // Auto-calculate planting area based on Miyawaki principles when total area changes
+        if (field === 'totalArea' && value && value > 0) {
+            // Miyawaki method: 80-85% for planting, 15-20% for pathways/maintenance
+            const plantingPercentage = 0.82; // Using 82% as optimal balance
+            const calculatedPlantingArea = Math.round(value * plantingPercentage);
+            newProjectInfo.plantingArea = calculatedPlantingArea;
+            newProjectInfo.pathwayArea = value - calculatedPlantingArea;
+        }
+        
+        setTempProjectInfo(newProjectInfo);
+        
+        // Clear errors for both fields if total area was changed
+        if (field === 'totalArea') {
+            setErrors(prev => ({ 
+                ...prev, 
+                [field]: '', 
+                plantingArea: '',
+                pathwayArea: ''
+            }));
+        } else if (errors[field]) {
             setErrors(prev => ({ ...prev, [field]: '' }));
         }
     };
@@ -109,36 +119,45 @@ const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, set
                             
                             <div>
                                 <label className="block text-green-700 font-medium mb-2" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
-                                    Planting Area (m²) *
+                                    Planting Area (m²) * 
+                                    <span className="text-sm text-green-600 font-normal ml-2">
+                                        (Auto-calculated: 82% of total area)
+                                    </span>
                                 </label>
                                 <input
                                     type="number"
                                     value={tempProjectInfo.plantingArea || ''}
-                                    onChange={(e) => handleChange('plantingArea', e.target.value === '' ? '' : Number(e.target.value))}
-                                    className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none font-medium ${
-                                        errors.plantingArea ? 'border-red-400 focus:border-red-500' : 'border-green-300 focus:border-green-500'
-                                    }`}
+                                    readOnly
+                                    className="w-full px-4 py-3 border-2 border-green-200 rounded-lg bg-green-50 text-green-800 font-medium cursor-not-allowed"
                                     style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
-                                    placeholder="e.g., 278"
+                                    placeholder="Will be calculated automatically"
                                 />
+                                <p className="text-green-600 text-xs mt-1" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                                    🌱 Following Miyawaki method: optimal planting density with maintenance access
+                                </p>
                                 {errors.plantingArea && <p className="text-red-500 text-sm mt-1">{errors.plantingArea}</p>}
                             </div>
-                            
+
                             <div>
                                 <label className="block text-green-700 font-medium mb-2" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
-                                    Location *
+                                    Pathway Area (m²)
+                                    <span className="text-sm text-green-600 font-normal ml-2">
+                                        (Auto-calculated: 18% of total area)
+                                    </span>
                                 </label>
                                 <input
-                                    type="text"
-                                    value={tempProjectInfo.location}
-                                    onChange={(e) => handleChange('location', e.target.value)}
-                                    className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none font-medium ${
-                                        errors.location ? 'border-red-400 focus:border-red-500' : 'border-green-300 focus:border-green-500'
-                                    }`}
+                                    type="number"
+                                    value={tempProjectInfo.pathwayArea || ''}
+                                    readOnly
+                                    className="w-full px-4 py-3 border-2 border-blue-200 rounded-lg bg-blue-50 text-blue-800 font-medium cursor-not-allowed"
                                     style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
+                                    placeholder="Will be calculated automatically"
                                 />
-                                {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
+                                <p className="text-blue-600 text-xs mt-1" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                                    🚶 Access paths for maintenance, harvesting, and forest management
+                                </p>
                             </div>
+                            
                         </div>
                     </div>
 
@@ -311,10 +330,6 @@ const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, set
                             <span className="text-green-800 font-semibold block mb-1" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Planting Area</span>
                             <span className="text-green-900 text-xl font-bold" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>{projectInfo.plantingArea} m²</span>
                         </div>
-                    </div>
-                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <span className="text-blue-800 font-semibold block mb-1" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Location</span>
-                        <span className="text-blue-900 text-lg font-medium" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>{projectInfo.location}</span>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">

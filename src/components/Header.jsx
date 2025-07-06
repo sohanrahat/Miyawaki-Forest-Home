@@ -61,7 +61,7 @@ const Header = ({ totalPlants, density, costBreakdown, projectInfo, plants, site
     return (
     <div className="bg-green-50 rounded-xl shadow-md p-6 mb-6 border border-green-200 text-center">
         <h1 className="text-3xl font-bold mb-2 text-green-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Miyawaki Forest Planner</h1>
-        <p className="text-green-600" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Interactive planning tool for your food forest in {projectInfo.location}</p>
+        <p className="text-green-600" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Interactive planning tool for your food forest</p>
 
         {/* Key Metrics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
