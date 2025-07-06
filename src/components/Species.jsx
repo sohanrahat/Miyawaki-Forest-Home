@@ -1,9 +1,171 @@
 
+import React, { useState } from 'react';
 import { GiTreeGrowth, GiPlantSeed } from 'react-icons/gi';
-import { FaTrash } from 'react-icons/fa';
+import { FaTrash, FaCheck } from 'react-icons/fa';
 
+const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpecies, onConfirm }) => {
+    const [tempSelectedSpecies, setTempSelectedSpecies] = useState(selectedSpecies);
 
-const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies }) => {
+    const handleSpeciesToggle = (layer, species) => {
+        setTempSelectedSpecies(prev => {
+            const layerSpecies = prev[layer] || [];
+            const isSelected = layerSpecies.some(s => s.name === species.name);
+            
+            if (isSelected) {
+                return {
+                    ...prev,
+                    [layer]: layerSpecies.filter(s => s.name !== species.name)
+                };
+            } else {
+                return {
+                    ...prev,
+                    [layer]: [...layerSpecies, species]
+                };
+            }
+        });
+    };
+
+    const handleConfirmSelection = () => {
+        // Generate random counts for selected species based on Miyawaki principles
+        const plantsWithCounts = {};
+        
+        Object.entries(tempSelectedSpecies).forEach(([layer, species]) => {
+            plantsWithCounts[layer] = species.map(spec => {
+                let randomCount;
+                // Assign random counts based on layer and Miyawaki density principles
+                switch(layer) {
+                    case 'canopy':
+                        randomCount = Math.floor(Math.random() * 20) + 10; // 10-30 trees
+                        break;
+                    case 'subcanopy':
+                        randomCount = Math.floor(Math.random() * 25) + 15; // 15-40 trees
+                        break;
+                    case 'shrub':
+                        randomCount = Math.floor(Math.random() * 30) + 20; // 20-50 shrubs
+                        break;
+                    case 'ground':
+                        randomCount = Math.floor(Math.random() * 20) + 5; // 5-25 ground plants
+                        break;
+                    default:
+                        randomCount = Math.floor(Math.random() * 15) + 10;
+                }
+                
+                return {
+                    ...spec,
+                    count: randomCount
+                };
+            });
+        });
+        
+        setSelectedSpecies(tempSelectedSpecies);
+        onConfirm(plantsWithCounts);
+    };
+
+    const layerColors = {
+        canopy: 'bg-green-100 border-green-300',
+        subcanopy: 'bg-yellow-100 border-yellow-300',
+        shrub: 'bg-blue-100 border-blue-300',
+        ground: 'bg-purple-100 border-purple-300'
+    };
+
+    const layerIcons = {
+        canopy: '🌳',
+        subcanopy: '🌿',
+        shrub: '🌱',
+        ground: '🍃'
+    };
+
+    return (
+        <div>
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-green-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                    Select Species for Your Forest
+                </h2>
+                <button
+                    onClick={handleConfirmSelection}
+                    className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center font-medium"
+                    style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
+                >
+                    <FaCheck className="mr-2" />
+                    Confirm Selection
+                </button>
+            </div>
+
+            <p className="text-green-700 mb-8 text-center" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                🌱 Select species from each layer to create your diverse forest ecosystem. Quantities will be assigned automatically based on Miyawaki principles.
+            </p>
+
+            <div className="grid grid-cols-4 gap-6">
+                {Object.entries(speciesSuggestions).map(([layer, species]) => (
+                    <div key={layer} className={`p-4 rounded-xl border-2 shadow-lg ${layerColors[layer]}`}>
+                        <h3 className="text-lg font-semibold capitalize flex flex-col items-center mb-4 text-green-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                            <span className="text-2xl mb-1">{layerIcons[layer]}</span>
+                            {layer} Layer
+                            <span className="text-xs font-normal text-green-700 mt-1">
+                                {layer === 'canopy' && '(15-30m height)'}
+                                {layer === 'subcanopy' && '(4-15m height)'}
+                                {layer === 'shrub' && '(0.5-4m height)'}
+                                {layer === 'ground' && '(0-0.5m height)'}
+                            </span>
+                            <span className="text-xs font-normal text-green-600">
+                                ({tempSelectedSpecies[layer]?.length || 0} selected)
+                            </span>
+                        </h3>
+                        
+                        <div className="space-y-2">
+                            {species.map((spec, index) => {
+                                const isSelected = tempSelectedSpecies[layer]?.some(s => s.name === spec.name);
+                                return (
+                                    <div
+                                        key={index}
+                                        onClick={() => handleSpeciesToggle(layer, spec)}
+                                        className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
+                                            isSelected 
+                                                ? 'bg-green-200 border-green-500 shadow-sm' 
+                                                : 'bg-white border-gray-200 hover:border-green-300'
+                                        }`}
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-medium text-green-900 text-sm" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                                                {spec.name}
+                                            </span>
+                                            <div className={`w-4 h-4 rounded border flex items-center justify-center ${
+                                                isSelected ? 'bg-green-500 border-green-500' : 'border-gray-300'
+                                            }`}>
+                                                {isSelected && <FaCheck className="text-white text-xs" />}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies, speciesSuggestions, selectedSpecies, setSelectedSpecies, speciesSelectionConfirmed, setSpeciesSelectionConfirmed }) => {
+    
+    const handleConfirmSpeciesSelection = (plantsWithCounts) => {
+        setPlants(plantsWithCounts);
+        setSpeciesSelectionConfirmed(true);
+    };
+
+    // Show species selection if not confirmed yet
+    if (!speciesSelectionConfirmed) {
+        return (
+            <SpeciesSelection
+                speciesSuggestions={speciesSuggestions}
+                selectedSpecies={selectedSpecies}
+                setSelectedSpecies={setSelectedSpecies}
+                onConfirm={handleConfirmSpeciesSelection}
+            />
+        );
+    }
+
+    // Show species management dashboard after confirmation
 
     const updatePlantProperty = (layer, index, property, value) => {
         const newPlants = { ...plants };
