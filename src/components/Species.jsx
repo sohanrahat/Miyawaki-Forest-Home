@@ -32,7 +32,7 @@ const SpeciesDetailModal = ({ species, onClose }) => {
     );
 };
 
-const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpecies, onConfirm }) => {
+const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpecies, onConfirm, filterCriteria }) => {
     const [tempSelectedSpecies, setTempSelectedSpecies] = useState(selectedSpecies);
     const [detailedSpecies, setDetailedSpecies] = useState(null);
 
@@ -142,7 +142,7 @@ const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpec
                         </h3>
                         
                         <div className="space-y-2">
-                            {species.map((spec, index) => {
+                            {filterSpecies(species, filterCriteria).map((spec, index) => {
                                 const isSelected = tempSelectedSpecies[layer]?.some(s => s.name === spec.name);
                                 return (
                                     <div
@@ -181,9 +181,9 @@ const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpec
     );
 };
 
-import { checkForPlantingWarnings, getCompanionSuggestions } from '../utils/speciesUtils';
+import { checkForPlantingWarnings, getCompanionSuggestions, filterSpecies } from '../utils/speciesUtils';
 
-const Species = ({ plants, setPlants, speciesSuggestions, projectInfo }) => {
+const Species = ({ plants, setPlants, speciesSuggestions, projectInfo, filterCriteria }) => {
     const [speciesSelectionConfirmed, setSpeciesSelectionConfirmed] = useState(false);
     const [selectedSpecies, setSelectedSpecies] = useState({ canopy: [], subcanopy: [], shrub: [], ground: [] });
     const [warnings, setWarnings] = useState([]);
@@ -205,6 +205,7 @@ const Species = ({ plants, setPlants, speciesSuggestions, projectInfo }) => {
                 selectedSpecies={selectedSpecies}
                 setSelectedSpecies={setSelectedSpecies}
                 onConfirm={handleConfirmSpeciesSelection}
+                filterCriteria={filterCriteria}
             />
         );
     }
