@@ -10,35 +10,8 @@ import Blueprint from './components/Blueprint';
 import Export from './components/Export';
 import speciesDatabase from './data/species-database.json';
 
-const MiyawakiForestPlanner = () => {
-    // Load species data from JSON database (defaulting to Bangladesh region)
-    const currentRegion = 'bangladesh';
-    const speciesSuggestions = speciesDatabase.regions[currentRegion].layers;
-    
-    // Transform JSON data to match component expectations
-    const transformSpeciesData = (species) => ({
-        name: species.name,
-        years_to_fruit: species.years_to_fruit,
-        harvest_month: species.harvest_months.length > 0 ? species.harvest_months.join(', ') : 'N/A',
-        mature_height: species.mature_height,
-        scientific_name: species.scientific_name,
-        native: species.native,
-        economic_value: species.economic_value,
-        uses: species.uses,
-        nutritional_benefits: species.nutritional_benefits
-    });
-
-    // Species selection state
-    const [selectedSpecies, setSelectedSpecies] = useState({
-        canopy: [],
-        subcanopy: [],
-        shrub: [],
-        ground: []
-    });
-    const [speciesSelectionConfirmed, setSpeciesSelectionConfirmed] = useState(false);
-
-    // Initial plant database with Bangladesh species
-    const [plants, setPlants] = useState({
+// Base plant templates with Bangladesh species (proportions maintained) - moved outside component
+const basePlantTemplates = {
         canopy: [
             { name: 'Mango (Am)', count: 25, mature_height: 20, years_to_fruit: 5, harvest_month: 'June-Aug' },
             { name: 'Jackfruit (Kathal)', count: 20, mature_height: 18, years_to_fruit: 7, harvest_month: 'June-Sept' },
@@ -90,7 +63,65 @@ const MiyawakiForestPlanner = () => {
             { name: 'Pumpkin', count: 8, mature_height: 0.3, years_to_fruit: 0.3, harvest_month: 'Winter' },
             { name: 'Cucumber', count: 3, mature_height: 0.3, years_to_fruit: 0.2, harvest_month: 'Summer' }
         ]
+    };
+
+const MiyawakiForestPlanner = () => {
+    // Load species data from JSON database (defaulting to Bangladesh region)
+    const currentRegion = 'bangladesh';
+    const speciesSuggestions = speciesDatabase.regions[currentRegion].layers;
+    
+    // Transform JSON data to match component expectations
+    const transformSpeciesData = (species) => ({
+        name: species.name,
+        years_to_fruit: species.years_to_fruit,
+        harvest_month: species.harvest_months.length > 0 ? species.harvest_months.join(', ') : 'N/A',
+        mature_height: species.mature_height,
+        scientific_name: species.scientific_name,
+        native: species.native,
+        economic_value: species.economic_value,
+        uses: species.uses,
+        nutritional_benefits: species.nutritional_benefits
     });
+
+    // Species selection state
+    const [selectedSpecies, setSelectedSpecies] = useState({
+        canopy: [],
+        subcanopy: [],
+        shrub: [],
+        ground: []
+    });
+    const [speciesSelectionConfirmed, setSpeciesSelectionConfirmed] = useState(false);
+
+    // Function to scale plants based on planting area
+    const calculatePlantsForArea = React.useCallback((plantingArea) => {
+        if (!plantingArea || plantingArea <= 0) {
+            // Return base counts if no area specified
+            return basePlantTemplates;
+        }
+        
+        // Miyawaki density: 3-4 plants per m² (using 3.5 as optimal)
+        const targetDensity = 3.5;
+        const totalPlantsNeeded = Math.round(plantingArea * targetDensity);
+        
+        // Base total for proportional scaling
+        const baseTotal = 1002;
+        
+        // Scale each layer proportionally
+        const scaleFactor = totalPlantsNeeded / baseTotal;
+        
+        const scaledPlants = {};
+        Object.entries(basePlantTemplates).forEach(([layer, plants]) => {
+            scaledPlants[layer] = plants.map(plant => ({
+                ...plant,
+                count: Math.max(1, Math.round(plant.count * scaleFactor))
+            }));
+        });
+        
+        return scaledPlants;
+    }, []);
+
+    // Initial plant database - will be updated based on planting area
+    const [plants, setPlants] = useState(basePlantTemplates);
 
     const [projectInfo, setProjectInfo] = useState({
         totalArea: '',
@@ -112,6 +143,14 @@ const MiyawakiForestPlanner = () => {
 
     const [activeTab, setActiveTab] = useState('overview');
 
+    // Update plants when planting area changes
+    React.useEffect(() => {
+        if (projectInfo.plantingArea && projectInfo.plantingArea > 0) {
+            const scaledPlants = calculatePlantsForArea(projectInfo.plantingArea);
+            setPlants(scaledPlants);
+        }
+    }, [projectInfo.plantingArea, calculatePlantsForArea]);
+
     // Calculate totals
     const calculateTotals = () => {
         let totalPlants = 0;
@@ -127,7 +166,9 @@ const MiyawakiForestPlanner = () => {
     };
 
     const { totalPlants, totalByLayer } = calculateTotals();
-    const density = (totalPlants / projectInfo.plantingArea).toFixed(2);
+    const density = projectInfo.plantingArea && projectInfo.plantingArea > 0 
+        ? (totalPlants / projectInfo.plantingArea).toFixed(2) 
+        : '0.00';
 
     // Add new plant species
     const addNewSpecies = (layer) => {
@@ -152,7 +193,9 @@ const MiyawakiForestPlanner = () => {
     // Cost calculations
     const totalCost = () => {
         const plantCost = totalPlants * costs.plantCostPerUnit;
-        const soilCost = projectInfo.plantingArea * costs.soilAmendmentPerM2;
+        const soilCost = (projectInfo.plantingArea && projectInfo.plantingArea > 0) 
+            ? projectInfo.plantingArea * costs.soilAmendmentPerM2 
+            : 0;
         const laborCost = 10 * costs.laborPerDay; // 10 days initial labor
         const threeYearMaintenance = 36 * costs.maintenanceMonthly;
         return {
