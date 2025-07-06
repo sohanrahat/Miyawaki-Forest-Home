@@ -1,8 +1,17 @@
 
 import { GiTreeGrowth, GiPlantSeed } from 'react-icons/gi';
-import { FaPlus, FaMinus } from 'react-icons/fa';
+import { FaTrash } from 'react-icons/fa';
 
-const Species = ({ plants, totalByLayer, addNewSpecies, updatePlantCount, setPlants }) => (
+
+const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies }) => {
+
+    const updatePlantProperty = (layer, index, property, value) => {
+        const newPlants = { ...plants };
+        newPlants[layer][index][property] = value;
+        setPlants(newPlants);
+    };
+
+    return (
     <div>
         <h2 className="text-2xl font-bold mb-6 text-green-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Species Management</h2>
 
@@ -41,34 +50,68 @@ const Species = ({ plants, totalByLayer, addNewSpecies, updatePlantCount, setPla
                                         <input
                                             type="text"
                                             value={plant.name}
-                                            onChange={(e) => {
-                                                const newPlants = { ...plants };
-                                                newPlants[layer][index].name = e.target.value;
-                                                setPlants(newPlants);
-                                            }}
+                                            onChange={(e) => updatePlantProperty(layer, index, 'name', e.target.value)}
                                             className="w-full px-3 py-2 border-2 border-green-300 rounded-lg text-green-900 focus:border-green-500 focus:outline-none font-medium"
                                             style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
                                         />
                                     </td>
-                                    <td className="p-4 text-center text-green-800 font-bold text-lg">{plant.count}</td>
-                                    <td className="p-4 text-center text-green-700 font-medium" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>{plant.mature_height}</td>
-                                    <td className="p-4 text-center text-green-700 font-medium" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>{plant.years_to_fruit || 'N/A'}</td>
-                                    <td className="p-4 text-center text-green-700 font-medium" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>{plant.harvest_month}</td>
+                                    <td className="p-4">
+                                        <input
+                                            type="number"
+                                            value={plant.count}
+                                            onChange={(e) => updatePlantProperty(layer, index, 'count', parseInt(e.target.value) || 0)}
+                                            className="w-20 px-3 py-2 border-2 border-green-300 rounded-lg text-green-900 focus:border-green-500 focus:outline-none font-medium text-center"
+                                            min="0"
+                                        />
+                                    </td>
+                                    <td className="p-4">
+                                        <input
+                                            type="number"
+                                            value={plant.mature_height}
+                                            onChange={(e) => updatePlantProperty(layer, index, 'mature_height', parseFloat(e.target.value) || 0)}
+                                            className="w-20 px-3 py-2 border-2 border-green-300 rounded-lg text-green-900 focus:border-green-500 focus:outline-none font-medium text-center"
+                                            min="0"
+                                            step="0.1"
+                                        />
+                                    </td>
+                                    <td className="p-4">
+                                        <input
+                                            type="number"
+                                            value={plant.years_to_fruit}
+                                            onChange={(e) => updatePlantProperty(layer, index, 'years_to_fruit', parseInt(e.target.value) || 0)}
+                                            className="w-24 px-3 py-2 border-2 border-green-300 rounded-lg text-green-900 focus:border-green-500 focus:outline-none font-medium text-center"
+                                            min="0"
+                                        />
+                                    </td>
+                                    <td className="p-4">
+                                        <select
+                                            value={plant.harvest_month}
+                                            onChange={(e) => updatePlantProperty(layer, index, 'harvest_month', e.target.value)}
+                                            className="w-full px-3 py-2 border-2 border-green-300 rounded-lg text-green-900 focus:border-green-500 focus:outline-none font-medium"
+                                            style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
+                                        >
+                                            <option value="">N/A</option>
+                                            <option value="January">January</option>
+                                            <option value="February">February</option>
+                                            <option value="March">March</option>
+                                            <option value="April">April</option>
+                                            <option value="May">May</option>
+                                            <option value="June">June</option>
+                                            <option value="July">July</option>
+                                            <option value="August">August</option>
+                                            <option value="September">September</option>
+                                            <option value="October">October</option>
+                                            <option value="November">November</option>
+                                            <option value="December">December</option>
+                                        </select>
+                                    </td>
                                     <td className="p-4 text-center">
-                                        <div className="flex justify-center gap-3">
-                                            <button
-                                                onClick={() => updatePlantCount(layer, index, -5)}
-                                                className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors shadow-sm"
-                                            >
-                                                <FaMinus size={14} />
-                                            </button>
-                                            <button
-                                                onClick={() => updatePlantCount(layer, index, 5)}
-                                                className="p-2 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors shadow-sm"
-                                            >
-                                                <FaPlus size={14} />
-                                            </button>
-                                        </div>
+                                        <button
+                                            onClick={() => deleteSpecies(layer, index)}
+                                            className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors shadow-sm"
+                                        >
+                                            <FaTrash size={14} />
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -78,6 +121,7 @@ const Species = ({ plants, totalByLayer, addNewSpecies, updatePlantCount, setPla
             </div>
         ))}
     </div>
-);
+    );
+};
 
 export default Species;

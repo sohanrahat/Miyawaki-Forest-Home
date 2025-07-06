@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Header from './components/Header';
 import Navigation from './components/Navigation';
 import Overview from './components/Overview';
@@ -66,14 +66,16 @@ const MiyawakiForestPlanner = () => {
     });
 
     const [projectInfo, setProjectInfo] = useState({
-        totalArea: 334,
-        pathwayArea: 56,
-        plantingArea: 278,
-        location: 'Padma River Region',
-        soilType: 'Alluvial',
-        annualRainfall: 2000,
-        avgTemp: 25
+        totalArea: '',
+        pathwayArea: '',
+        plantingArea: '',
+        location: '',
+        soilType: '',
+        annualRainfall: '',
+        avgTemp: ''
     });
+
+    const [siteInfoConfirmed, setSiteInfoConfirmed] = useState(false);
 
     const [costs, setCosts] = useState({
         plantCostPerUnit: 60,
@@ -101,13 +103,6 @@ const MiyawakiForestPlanner = () => {
     const { totalPlants, totalByLayer } = calculateTotals();
     const density = (totalPlants / projectInfo.plantingArea).toFixed(2);
 
-    // Update plant count
-    const updatePlantCount = (layer, index, delta) => {
-        const newPlants = { ...plants };
-        newPlants[layer][index].count = Math.max(0, newPlants[layer][index].count + delta);
-        setPlants(newPlants);
-    };
-
     // Add new plant species
     const addNewSpecies = (layer) => {
         const newPlants = { ...plants };
@@ -118,6 +113,13 @@ const MiyawakiForestPlanner = () => {
             years_to_fruit: 3,
             harvest_month: 'Unknown'
         });
+        setPlants(newPlants);
+    };
+
+    // Delete plant species
+    const deleteSpecies = (layer, index) => {
+        const newPlants = { ...plants };
+        newPlants[layer].splice(index, 1);
         setPlants(newPlants);
     };
 
@@ -143,7 +145,7 @@ const MiyawakiForestPlanner = () => {
         const timeline = [];
         for (let year = 0; year <= 10; year++) {
             let fruiting = 0;
-            Object.entries(plants).forEach(([layer, plantList]) => {
+            Object.entries(plants).forEach(([, plantList]) => {
                 plantList.forEach(plant => {
                     if (plant.years_to_fruit > 0 && plant.years_to_fruit <= year) {
                         fruiting += plant.count;
@@ -170,13 +172,15 @@ const MiyawakiForestPlanner = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-stone-50 via-forest-50 to-earth-50 text-forest-400 p-4">
             <div className="max-w-7xl mx-auto">
+                <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
                 <Header
                     totalPlants={totalPlants}
                     density={density}
                     costBreakdown={costBreakdown}
                     projectInfo={projectInfo}
+                    plants={plants}
+                    siteInfoConfirmed={siteInfoConfirmed}
                 />
-                <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
                 <div className="bg-gradient-to-br from-white to-stone-50 rounded-xl shadow-medium p-6 border border-stone-200 backdrop-blur-sm">
                     {activeTab === 'overview' && (
@@ -184,6 +188,8 @@ const MiyawakiForestPlanner = () => {
                             pieData={pieData}
                             projectInfo={projectInfo}
                             setProjectInfo={setProjectInfo}
+                            siteInfoConfirmed={siteInfoConfirmed}
+                            setSiteInfoConfirmed={setSiteInfoConfirmed}
                         />
                     )}
                     {activeTab === 'species' && (
@@ -191,8 +197,8 @@ const MiyawakiForestPlanner = () => {
                             plants={plants}
                             totalByLayer={totalByLayer}
                             addNewSpecies={addNewSpecies}
-                            updatePlantCount={updatePlantCount}
                             setPlants={setPlants}
+                            deleteSpecies={deleteSpecies}
                         />
                     )}
                     {activeTab === 'timeline' && (
