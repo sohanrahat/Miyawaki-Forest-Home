@@ -175,7 +175,12 @@ const MiyawakiForestPlanner = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-stone-50 via-forest-50 to-earth-50 text-forest-400 p-4">
             <div className="max-w-7xl mx-auto">
-                <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
+                <Navigation 
+                    activeTab={activeTab} 
+                    setActiveTab={setActiveTab} 
+                    siteInfoConfirmed={siteInfoConfirmed}
+                    speciesSelectionConfirmed={speciesSelectionConfirmed}
+                />
                 <Header
                     totalPlants={totalPlants}
                     density={density}
@@ -210,8 +215,55 @@ const MiyawakiForestPlanner = () => {
                             setSpeciesSelectionConfirmed={setSpeciesSelectionConfirmed}
                         />
                     )}
-                    {activeTab === 'timeline' && (
+                    {activeTab === 'timeline' && siteInfoConfirmed && speciesSelectionConfirmed && (
                         <Timeline plants={plants} harvestTimeline={harvestTimelineData} />
+                    )}
+                    {activeTab === 'timeline' && (!siteInfoConfirmed || !speciesSelectionConfirmed) && (
+                        <div className="text-center py-12">
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 max-w-2xl mx-auto">
+                                <div className="text-6xl mb-4">📅</div>
+                                <h3 className="text-xl font-bold text-yellow-800 mb-4" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                                    Timeline Not Available
+                                </h3>
+                                <p className="text-yellow-700 mb-6" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                                    To view your harvest timeline, you need to complete the following steps:
+                                </p>
+                                <div className="space-y-3 text-left">
+                                    <div className={`flex items-center p-3 rounded-lg ${siteInfoConfirmed ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                        <span className="text-xl mr-3">{siteInfoConfirmed ? '✅' : '📊'}</span>
+                                        <span style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                                            {siteInfoConfirmed ? 'Project Info Completed' : 'Enter land area in Project Info tab'}
+                                        </span>
+                                    </div>
+                                    <div className={`flex items-center p-3 rounded-lg ${speciesSelectionConfirmed ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                        <span className="text-xl mr-3">{speciesSelectionConfirmed ? '✅' : '🌱'}</span>
+                                        <span style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                                            {speciesSelectionConfirmed ? 'Species Selection Completed' : 'Select and confirm species in Species tab'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="mt-6 flex gap-3 justify-center">
+                                    {!siteInfoConfirmed && (
+                                        <button
+                                            onClick={() => setActiveTab('overview')}
+                                            className="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+                                            style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
+                                        >
+                                            Go to Project Info
+                                        </button>
+                                    )}
+                                    {siteInfoConfirmed && !speciesSelectionConfirmed && (
+                                        <button
+                                            onClick={() => setActiveTab('species')}
+                                            className="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+                                            style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
+                                        >
+                                            Go to Species Selection
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     )}
                     {activeTab === 'costs' && (
                         <Costs
@@ -224,7 +276,56 @@ const MiyawakiForestPlanner = () => {
                             speciesSelectionConfirmed={speciesSelectionConfirmed}
                         />
                     )}
-                    {activeTab === 'blueprint' && <Blueprint totalPlants={totalPlants} />}
+                    {activeTab === 'blueprint' && siteInfoConfirmed && speciesSelectionConfirmed && (
+                        <Blueprint totalPlants={totalPlants} />
+                    )}
+                    {activeTab === 'blueprint' && (!siteInfoConfirmed || !speciesSelectionConfirmed) && (
+                        <div className="text-center py-12">
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-8 max-w-2xl mx-auto">
+                                <div className="text-6xl mb-4">🗺️</div>
+                                <h3 className="text-xl font-bold text-yellow-800 mb-4" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                                    Blueprint Not Available
+                                </h3>
+                                <p className="text-yellow-700 mb-6" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                                    To view your forest blueprint, you need to complete the following steps:
+                                </p>
+                                <div className="space-y-3 text-left">
+                                    <div className={`flex items-center p-3 rounded-lg ${siteInfoConfirmed ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                        <span className="text-xl mr-3">{siteInfoConfirmed ? '✅' : '📊'}</span>
+                                        <span style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                                            {siteInfoConfirmed ? 'Project Info Completed' : 'Enter land area in Project Info tab'}
+                                        </span>
+                                    </div>
+                                    <div className={`flex items-center p-3 rounded-lg ${speciesSelectionConfirmed ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                        <span className="text-xl mr-3">{speciesSelectionConfirmed ? '✅' : '🌱'}</span>
+                                        <span style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
+                                            {speciesSelectionConfirmed ? 'Species Selection Completed' : 'Select and confirm species in Species tab'}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="mt-6 flex gap-3 justify-center">
+                                    {!siteInfoConfirmed && (
+                                        <button
+                                            onClick={() => setActiveTab('overview')}
+                                            className="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+                                            style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
+                                        >
+                                            Go to Project Info
+                                        </button>
+                                    )}
+                                    {siteInfoConfirmed && !speciesSelectionConfirmed && (
+                                        <button
+                                            onClick={() => setActiveTab('species')}
+                                            className="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+                                            style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
+                                        >
+                                            Go to Species Selection
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
