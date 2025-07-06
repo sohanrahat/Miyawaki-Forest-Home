@@ -86,30 +86,6 @@ const MiyawakiForestPlanner = () => {
         maintenanceMonthly: 800
     });
     const [activeTab, setActiveTab] = useState('overview');
-
-    const filterCriteria = React.useMemo(() => {
-        let waterNeeds = '';
-        if (projectInfo.annualRainfall) {
-            const rainfall = parseFloat(projectInfo.annualRainfall);
-            if (rainfall < 1000) waterNeeds = 'low';
-            else if (rainfall < 2000) waterNeeds = 'medium';
-            else waterNeeds = 'high';
-        }
-
-        let sunExposure = '';
-        if (projectInfo.avgTemp) {
-            const avgTemp = parseFloat(projectInfo.avgTemp);
-            if (avgTemp < 20) sunExposure = 'partial_shade';
-            else if (avgTemp < 30) sunExposure = 'full_sun';
-            else sunExposure = 'full_sun'; // Assuming very high temps still mean full sun
-        }
-
-        return {
-            soilType: projectInfo.soilType,
-            waterNeeds,
-            sunExposure,
-        };
-    }, [projectInfo.soilType, projectInfo.annualRainfall, projectInfo.avgTemp]);
     
     const calculatePlantsForArea = useCallback((plantingArea) => {
         if (!plantingArea || plantingArea <= 0 || Object.keys(basePlantTemplates).length === 0) {
@@ -168,6 +144,25 @@ const MiyawakiForestPlanner = () => {
         };
     }, [totalPlants, costs, projectInfo.plantingArea]);
 
+    const harvestTimelineData = React.useMemo(() => {
+        console.log('MiyawakiForestPlanner - calculating harvestTimelineData with plants:', plants);
+        const data = [];
+        const maxYears = 10; // Simulate for 10 years
+
+        for (let year = 0; year <= maxYears; year++) {
+            let fruitingPlants = 0;
+            Object.values(plants).forEach(plantList => {
+                plantList.forEach(plant => {
+                    if (plant.years_to_fruit <= year) {
+                        fruitingPlants += plant.count;
+                    }
+                });
+            });
+            data.push({ year, plants: fruitingPlants });
+        }
+        return data;
+    }, [plants]);
+
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center">Loading species data...</div>;
     }
@@ -210,11 +205,10 @@ const MiyawakiForestPlanner = () => {
                             setPlants={setPlants}
                             speciesSuggestions={speciesData}
                             projectInfo={projectInfo}
-                            filterCriteria={filterCriteria}
                         />
                     )}
                     {activeTab === 'timeline' && (
-                        <Timeline plants={plants} />
+                        <Timeline plants={plants} harvestTimeline={harvestTimelineData} />
                     )}
                     {activeTab === 'costs' && (
                         <Costs
@@ -223,6 +217,7 @@ const MiyawakiForestPlanner = () => {
                             costBreakdown={costBreakdown}
                             totalPlants={totalPlants}
                             projectInfo={projectInfo}
+                            plants={plants}
                         />
                     )}
                     {activeTab === 'blueprint' && <Blueprint totalPlants={totalPlants} />}

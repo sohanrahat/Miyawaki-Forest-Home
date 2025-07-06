@@ -32,7 +32,7 @@ const SpeciesDetailModal = ({ species, onClose }) => {
     );
 };
 
-const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpecies, onConfirm, filterCriteria }) => {
+const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpecies, onConfirm }) => {
     const [tempSelectedSpecies, setTempSelectedSpecies] = useState(selectedSpecies);
     const [detailedSpecies, setDetailedSpecies] = useState(null);
 
@@ -80,7 +80,8 @@ const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpec
                 
                 return {
                     ...spec,
-                    count: randomCount
+                    count: randomCount,
+                    years_to_fruit: spec.years_to_fruit || 0 // Ensure years_to_fruit is a number
                 };
             });
         });
@@ -142,7 +143,7 @@ const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpec
                         </h3>
                         
                         <div className="space-y-2">
-                            {filterSpecies(species, filterCriteria).map((spec, index) => {
+                            {species.map((spec, index) => {
                                 const isSelected = tempSelectedSpecies[layer]?.some(s => s.name === spec.name);
                                 return (
                                     <div
@@ -181,9 +182,9 @@ const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpec
     );
 };
 
-import { checkForPlantingWarnings, getCompanionSuggestions, filterSpecies } from '../utils/speciesUtils';
+import { filterSpecies } from '../utils/speciesUtils';
 
-const Species = ({ plants, setPlants, speciesSuggestions, projectInfo, filterCriteria }) => {
+const Species = ({ plants, setPlants, speciesSuggestions, projectInfo }) => {
     const [speciesSelectionConfirmed, setSpeciesSelectionConfirmed] = useState(false);
     const [selectedSpecies, setSelectedSpecies] = useState({ canopy: [], subcanopy: [], shrub: [], ground: [] });
     const [warnings, setWarnings] = useState([]);
@@ -192,10 +193,7 @@ const Species = ({ plants, setPlants, speciesSuggestions, projectInfo, filterCri
     const handleConfirmSpeciesSelection = (plantsWithCounts) => {
         setPlants(plantsWithCounts);
         setSpeciesSelectionConfirmed(true);
-        const warnings = checkForPlantingWarnings(plantsWithCounts, projectInfo.soilType);
-        setWarnings(warnings);
-        const suggestions = getCompanionSuggestions(plantsWithCounts, speciesSuggestions);
-        setSuggestions(suggestions);
+        
     };
 
     if (!speciesSelectionConfirmed) {
@@ -205,7 +203,7 @@ const Species = ({ plants, setPlants, speciesSuggestions, projectInfo, filterCri
                 selectedSpecies={selectedSpecies}
                 setSelectedSpecies={setSelectedSpecies}
                 onConfirm={handleConfirmSpeciesSelection}
-                filterCriteria={filterCriteria}
+                
             />
         );
     }
@@ -253,28 +251,7 @@ const Species = ({ plants, setPlants, speciesSuggestions, projectInfo, filterCri
     <div>
         <h2 className="text-2xl font-bold mb-6 text-green-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>Species Management</h2>
 
-        {warnings.length > 0 && (
-            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
-                <p className="font-bold">Warnings</p>
-                <ul>
-                    {warnings.map((warning, index) => (
-                        <li key={index}>{warning}</li>
-                    ))}
-                </ul>
-            </div>
-        )}
-
-        {suggestions.length > 0 && (
-            <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
-                <p className="font-bold">Companion Planting Suggestions</p>
-                <p>Consider adding these plants to improve your forest ecosystem:</p>
-                <ul>
-                    {suggestions.map((suggestion, index) => (
-                        <li key={index}>{suggestion.name}</li>
-                    ))}
-                </ul>
-            </div>
-        )}
+        
 
         {Object.entries(plants).map(([layer, plantList]) => (
             <div key={layer} className="mb-8 bg-white p-6 rounded-xl border-2 border-green-200 shadow-lg">

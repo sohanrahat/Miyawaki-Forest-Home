@@ -1,12 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { GiWaterDrop, GiTreeGrowth } from 'react-icons/gi';
 import { FaMapMarkerAlt, FaCheck, FaEdit } from 'react-icons/fa';
 
 const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, setSiteInfoConfirmed, setActiveTab }) => {
     const [showEditForm, setShowEditForm] = useState(false);
-    const [tempProjectInfo, setTempProjectInfo] = useState(projectInfo);
     const [errors, setErrors] = useState({});
 
     // Check if this is the first time (no site info confirmed yet)
@@ -15,22 +14,19 @@ const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, set
     const validateForm = () => {
         const newErrors = {};
         
-        if (!tempProjectInfo.totalArea || tempProjectInfo.totalArea === '' || tempProjectInfo.totalArea <= 0) {
+        if (!projectInfo.totalArea || projectInfo.totalArea === '' || projectInfo.totalArea <= 0) {
             newErrors.totalArea = 'Total area must be greater than 0';
         }
         
-        // Planting area validation removed - it's auto-calculated based on Miyawaki principles
-        // Location field removed
-        
-        if (!tempProjectInfo.soilType) {
+        if (!projectInfo.soilType) {
             newErrors.soilType = 'Soil type is required';
         }
         
-        if (!tempProjectInfo.annualRainfall || tempProjectInfo.annualRainfall === '' || tempProjectInfo.annualRainfall <= 0) {
+        if (!projectInfo.annualRainfall || projectInfo.annualRainfall === '' || projectInfo.annualRainfall <= 0) {
             newErrors.annualRainfall = 'Annual rainfall must be greater than 0';
         }
         
-        if (!tempProjectInfo.avgTemp || tempProjectInfo.avgTemp === '' || tempProjectInfo.avgTemp < -10 || tempProjectInfo.avgTemp > 50) {
+        if (!projectInfo.avgTemp || projectInfo.avgTemp === '' || projectInfo.avgTemp < -10 || projectInfo.avgTemp > 50) {
             newErrors.avgTemp = 'Average temperature must be between -10°C and 50°C';
         }
         
@@ -40,36 +36,31 @@ const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, set
 
     const handleSave = () => {
         if (validateForm()) {
-            const updatedInfo = {
-                ...tempProjectInfo,
-                pathwayArea: tempProjectInfo.pathwayArea || 
-                    Math.max(tempProjectInfo.totalArea - tempProjectInfo.plantingArea, 0)
-            };
-            setProjectInfo(updatedInfo);
             setSiteInfoConfirmed(true);
             setShowEditForm(false);
         }
     };
 
     const handleCancel = () => {
-        setTempProjectInfo(projectInfo);
+        // Revert to the last confirmed projectInfo if editing is cancelled
+        // This requires storing the confirmed state in MiyawakiForestPlanner
+        // For now, just close the form and clear errors
         setErrors({});
         setShowEditForm(false);
     };
 
     const handleChange = (field, value) => {
-        const newProjectInfo = { ...tempProjectInfo, [field]: value };
+        const updatedInfo = { ...projectInfo, [field]: value };
         
         // Auto-calculate planting area based on Miyawaki principles when total area changes
         if (field === 'totalArea' && value && value > 0) {
-            // Miyawaki method: 80-85% for planting, 15-20% for pathways/maintenance
-            const plantingPercentage = 0.82; // Using 82% as optimal balance
+            const plantingPercentage = 0.82;
             const calculatedPlantingArea = Math.round(value * plantingPercentage);
-            newProjectInfo.plantingArea = calculatedPlantingArea;
-            newProjectInfo.pathwayArea = value - calculatedPlantingArea;
+            updatedInfo.plantingArea = calculatedPlantingArea;
+            updatedInfo.pathwayArea = value - calculatedPlantingArea;
         }
         
-        setTempProjectInfo(newProjectInfo);
+        setProjectInfo(updatedInfo);
         
         // Clear errors for both fields if total area was changed
         if (field === 'totalArea') {
@@ -83,6 +74,13 @@ const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, set
             setErrors(prev => ({ ...prev, [field]: '' }));
         }
     };
+
+    // Effect to show edit form if site info is not confirmed
+    useEffect(() => {
+        if (!siteInfoConfirmed) {
+            setShowEditForm(true);
+        }
+    }, [siteInfoConfirmed]);
 
     if (showEditForm || isFirstTime) {
         return (
@@ -106,7 +104,7 @@ const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, set
                                 </label>
                                 <input
                                     type="number"
-                                    value={tempProjectInfo.totalArea || ''}
+                                    value={projectInfo.totalArea || ''}
                                     onChange={(e) => handleChange('totalArea', e.target.value === '' ? '' : Number(e.target.value))}
                                     className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none font-medium ${
                                         errors.totalArea ? 'border-red-400 focus:border-red-500' : 'border-green-300 focus:border-green-500'
@@ -126,7 +124,7 @@ const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, set
                                 </label>
                                 <input
                                     type="number"
-                                    value={tempProjectInfo.plantingArea || ''}
+                                    value={projectInfo.plantingArea || ''}
                                     readOnly
                                     className="w-full px-4 py-3 border-2 border-green-200 rounded-lg bg-green-50 text-green-800 font-medium cursor-not-allowed"
                                     style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
@@ -147,7 +145,7 @@ const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, set
                                 </label>
                                 <input
                                     type="number"
-                                    value={tempProjectInfo.pathwayArea || ''}
+                                    value={projectInfo.pathwayArea || ''}
                                     readOnly
                                     className="w-full px-4 py-3 border-2 border-blue-200 rounded-lg bg-blue-50 text-blue-800 font-medium cursor-not-allowed"
                                     style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
@@ -172,7 +170,7 @@ const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, set
                                     Soil Type *
                                 </label>
                                 <select
-                                    value={tempProjectInfo.soilType}
+                                    value={projectInfo.soilType}
                                     onChange={(e) => handleChange('soilType', e.target.value)}
                                     className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none font-medium ${
                                         errors.soilType ? 'border-red-400 focus:border-red-500' : 'border-green-300 focus:border-green-500'
@@ -196,7 +194,7 @@ const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, set
                                 </label>
                                 <input
                                     type="number"
-                                    value={tempProjectInfo.annualRainfall || ''}
+                                    value={projectInfo.annualRainfall || ''}
                                     onChange={(e) => handleChange('annualRainfall', e.target.value === '' ? '' : Number(e.target.value))}
                                     className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none font-medium ${
                                         errors.annualRainfall ? 'border-red-400 focus:border-red-500' : 'border-green-300 focus:border-green-500'
@@ -213,7 +211,7 @@ const Overview = ({ pieData, projectInfo, setProjectInfo, siteInfoConfirmed, set
                                 </label>
                                 <input
                                     type="number"
-                                    value={tempProjectInfo.avgTemp || ''}
+                                    value={projectInfo.avgTemp || ''}
                                     onChange={(e) => handleChange('avgTemp', e.target.value === '' ? '' : Number(e.target.value))}
                                     className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none font-medium ${
                                         errors.avgTemp ? 'border-red-400 focus:border-red-500' : 'border-green-300 focus:border-green-500'

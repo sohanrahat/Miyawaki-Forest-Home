@@ -51,16 +51,6 @@ export const filterSpecies = (species, criteria) => {
         if (criteria.soilType && !spec.soil_types.includes(criteria.soilType)) {
             return false;
         }
-
-        // Filter by sun exposure (derived from avgTemp)
-        if (criteria.sunExposure && spec.sun_exposure !== criteria.sunExposure) {
-            return false;
-        }
-
-        // Filter by water needs (derived from annualRainfall)
-        if (criteria.waterNeeds && spec.water_needs !== criteria.waterNeeds) {
-            return false;
-        }
         
         // Filter by height range
         if (criteria.minHeight && spec.mature_height < criteria.minHeight) {
