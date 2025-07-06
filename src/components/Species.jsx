@@ -1,9 +1,39 @@
+
 import React, { useState } from 'react';
 import { GiTreeGrowth, GiPlantSeed } from 'react-icons/gi';
-import { FaTrash, FaCheck } from 'react-icons/fa';
+import { FaTrash, FaCheck, FaInfoCircle } from 'react-icons/fa';
+
+const SpeciesDetailModal = ({ species, onClose }) => {
+    if (!species) return null;
+
+    const detailItemStyle = "flex justify-between py-2 border-b border-green-200";
+    const labelStyle = "font-semibold text-green-800";
+    const valueStyle = "text-green-900";
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
+            <div className="bg-white rounded-2xl shadow-2xl p-8 m-4 max-w-lg w-full relative" onClick={e => e.stopPropagation()}>
+                <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+                <h2 className="text-3xl font-bold text-green-800 mb-4" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>{species.name}</h2>
+                <p className="text-md italic text-green-600 mb-6" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>{species.scientific_name}</p>
+                
+                <div className="space-y-3">
+                    <div className={detailItemStyle}><span className={labelStyle}>Sun Exposure:</span> <span className={valueStyle}>{species.sun_exposure}</span></div>
+                    <div className={detailItemStyle}><span className={labelStyle}>Water Needs:</span> <span className={valueStyle}>{species.water_needs}</span></div>
+                    <div className={detailItemStyle}><span className={labelStyle}>Soil pH:</span> <span className={valueStyle}>{species.soil_ph}</span></div>
+                    <div className={detailItemStyle}><span className={labelStyle}>Drought Tolerance:</span> <span className={valueStyle}>{species.drought_tolerance}</span></div>
+                    <div className={detailItemStyle}><span className={labelStyle}>Flood Tolerance:</span> <span className={valueStyle}>{species.flood_tolerance}</span></div>
+                    <div className={detailItemStyle}><span className={labelStyle}>Companion Plants:</span> <span className={valueStyle}>{species.companion_plants?.join(', ') || 'None listed'}</span></div>
+                    <div className={detailItemStyle}><span className={labelStyle}>Avoid Planting With:</span> <span className={valueStyle}>{species.non_companion_plants?.join(', ') || 'None listed'}</span></div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpecies, onConfirm }) => {
     const [tempSelectedSpecies, setTempSelectedSpecies] = useState(selectedSpecies);
+    const [detailedSpecies, setDetailedSpecies] = useState(null);
 
     const handleSpeciesToggle = (layer, species) => {
         setTempSelectedSpecies(prev => {
@@ -74,6 +104,7 @@ const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpec
 
     return (
         <div>
+            <SpeciesDetailModal species={detailedSpecies} onClose={() => setDetailedSpecies(null)} />
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-green-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
                     Select Species for Your Forest
@@ -126,10 +157,16 @@ const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpec
                                             <span className="font-medium text-green-900 text-sm" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
                                                 {spec.name}
                                             </span>
-                                            <div className={`w-4 h-4 rounded border flex items-center justify-center ${
-                                                isSelected ? 'bg-green-500 border-green-500' : 'border-gray-300'
-                                            }`}>
-                                                {isSelected && <FaCheck className="text-white text-xs" />}
+                                            <div className="flex items-center">
+                                                <FaInfoCircle 
+                                                    className="text-green-500 hover:text-green-700 mr-2 cursor-pointer"
+                                                    onClick={(e) => { e.stopPropagation(); setDetailedSpecies(spec); }}
+                                                />
+                                                <div className={`w-4 h-4 rounded border flex items-center justify-center ${
+                                                    isSelected ? 'bg-green-500 border-green-500' : 'border-gray-300'
+                                                }`}>
+                                                    {isSelected && <FaCheck className="text-white text-xs" />}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
