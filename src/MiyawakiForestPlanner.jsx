@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import Navigation from './components/Navigation';
 import Overview from './components/Overview';
@@ -8,26 +8,23 @@ import Timeline from './components/Timeline';
 import Costs from './components/Costs';
 import Blueprint from './components/Blueprint';
 import Export from './components/Export';
-import speciesDatabase from './data/species-database.json';
 
-// Create base plant templates from database with predefined counts for balanced ecosystem
-const createBasePlantTemplates = () => {
-    const currentRegion = 'bangladesh';
-    const speciesData = speciesDatabase.regions[currentRegion].layers;
+// Helper function to format harvest months
+const formatHarvestMonths = (months) => {
+    if (!months || months.length === 0) return 'N/A';
+    if (months.length > 6) return 'Year-round';
+    return months.join(', ');
+};
+
+// Create base plant templates from database
+const createBasePlantTemplates = (speciesData) => {
+    if (!speciesData) return {};
     
-    // Helper function to format harvest months
-    const formatHarvestMonths = (months) => {
-        if (!months || months.length === 0) return 'N/A';
-        if (months.length > 6) return 'Year-round';
-        return months.join(', ');
-    };
-    
-    // Predefined counts for balanced ecosystem (these will be scaled based on area)
     const predefinedCounts = {
-        canopy: [25, 20, 15, 15, 10, 15, 20, 10, 10, 10], // Total: 150
-        subcanopy: [30, 25, 20, 15, 20, 15, 35, 25, 30, 15, 20], // Total: 250
-        shrub: [40, 30, 25, 20, 50, 40, 30, 35, 25, 30, 26], // Total: 351
-        ground: [40, 35, 20, 25, 30, 30, 25, 20, 15, 8, 3] // Total: 251
+        canopy: [25, 20, 15, 15, 10, 15, 20, 10, 10, 10],
+        subcanopy: [30, 25, 20, 15, 20, 15, 35, 25, 30, 15, 20],
+        shrub: [40, 30, 25, 20, 50, 40, 30, 35, 25, 30, 26],
+        ground: [40, 35, 20, 25, 30, 30, 25, 20, 15, 8, 3]
     };
     
     const templates = {};
@@ -35,83 +32,42 @@ const createBasePlantTemplates = () => {
     Object.entries(speciesData).forEach(([layer, species]) => {
         templates[layer] = species.map((spec, index) => ({
             name: spec.name,
-            count: predefinedCounts[layer]?.[index] || 10, // Default count if not specified
-            mature_height: spec.mature_height,
-            years_to_fruit: spec.years_to_fruit,
-            harvest_month: formatHarvestMonths(spec.harvest_months),
-            scientific_name: spec.scientific_name,
-            native: spec.native,
-            economic_value: spec.economic_value,
-            uses: spec.uses,
-            nutritional_benefits: spec.nutritional_benefits,
-            price: spec.price || 60 // Default price if not specified in database
+            count: predefinedCounts[layer]?.[index] || 10,
+            ...spec
         }));
     });
     
     return templates;
 };
 
-// Base plant templates with Bangladesh species (proportions maintained) - moved outside component
-const basePlantTemplates = createBasePlantTemplates();
-
 const MiyawakiForestPlanner = () => {
-    // Load species data from JSON database (defaulting to Bangladesh region)
-    const currentRegion = 'bangladesh';
-    const speciesSuggestions = speciesDatabase.regions[currentRegion].layers;
-    
-    // Transform JSON data to match component expectations
-    const transformSpeciesData = (species) => ({
-        name: species.name,
-        years_to_fruit: species.years_to_fruit,
-        harvest_month: species.harvest_months.length > 0 ? species.harvest_months.join(', ') : 'N/A',
-        mature_height: species.mature_height,
-        scientific_name: species.scientific_name,
-        native: species.native,
-        economic_value: species.economic_value,
-        uses: species.uses,
-        nutritional_benefits: species.nutritional_benefits,
-        price: species.price || 60 // Include price from database
-    });
+    const [speciesData, setSpeciesData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Species selection state
-    const [selectedSpecies, setSelectedSpecies] = useState({
-        canopy: [],
-        subcanopy: [],
-        shrub: [],
-        ground: []
-    });
-    const [speciesSelectionConfirmed, setSpeciesSelectionConfirmed] = useState(false);
+    const [plants, setPlants] = useState({});
+    const [basePlantTemplates, setBasePlantTemplates] = useState({});
 
-    // Function to scale plants based on planting area
-    const calculatePlantsForArea = React.useCallback((plantingArea) => {
-        if (!plantingArea || plantingArea <= 0) {
-            // Return base counts if no area specified
-            return basePlantTemplates;
-        }
-        
-        // Miyawaki density: 3-4 plants per m² (using 3.5 as optimal)
-        const targetDensity = 3.5;
-        const totalPlantsNeeded = Math.round(plantingArea * targetDensity);
-        
-        // Base total for proportional scaling
-        const baseTotal = 1002;
-        
-        // Scale each layer proportionally
-        const scaleFactor = totalPlantsNeeded / baseTotal;
-        
-        const scaledPlants = {};
-        Object.entries(basePlantTemplates).forEach(([layer, plants]) => {
-            scaledPlants[layer] = plants.map(plant => ({
-                ...plant,
-                count: Math.max(1, Math.round(plant.count * scaleFactor))
-            }));
-        });
-        
-        return scaledPlants;
+    useEffect(() => {
+        const fetchSpeciesData = async () => {
+            try {
+                const database = await import('./data/species-database.json');
+                const currentRegion = 'bangladesh';
+                const regionData = database.default.regions[currentRegion].layers;
+                setSpeciesData(regionData);
+                const templates = createBasePlantTemplates(regionData);
+                setBasePlantTemplates(templates);
+                setPlants(templates);
+            } catch (err) {
+                setError('Failed to load species database.');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchSpeciesData();
     }, []);
-
-    // Initial plant database - will be updated based on planting area
-    const [plants, setPlants] = useState(basePlantTemplates);
 
     const [projectInfo, setProjectInfo] = useState({
         totalArea: '',
@@ -123,26 +79,43 @@ const MiyawakiForestPlanner = () => {
     });
 
     const [siteInfoConfirmed, setSiteInfoConfirmed] = useState(false);
-
     const [costs, setCosts] = useState({
         plantCostPerUnit: 60,
         soilAmendmentPerM2: 100,
         laborPerDay: 500,
         maintenanceMonthly: 800
     });
-
     const [activeTab, setActiveTab] = useState('overview');
+    
+    const calculatePlantsForArea = useCallback((plantingArea) => {
+        if (!plantingArea || plantingArea <= 0 || Object.keys(basePlantTemplates).length === 0) {
+            return basePlantTemplates;
+        }
+        
+        const targetDensity = 3.5;
+        const totalPlantsNeeded = Math.round(plantingArea * targetDensity);
+        const baseTotal = 1002;
+        const scaleFactor = totalPlantsNeeded / baseTotal;
+        
+        const scaledPlants = {};
+        Object.entries(basePlantTemplates).forEach(([layer, plants]) => {
+            scaledPlants[layer] = plants.map(plant => ({
+                ...plant,
+                count: Math.max(1, Math.round(plant.count * scaleFactor))
+            }));
+        });
+        
+        return scaledPlants;
+    }, [basePlantTemplates]);
 
-    // Update plants when planting area changes
-    React.useEffect(() => {
+    useEffect(() => {
         if (projectInfo.plantingArea && projectInfo.plantingArea > 0) {
             const scaledPlants = calculatePlantsForArea(projectInfo.plantingArea);
             setPlants(scaledPlants);
         }
     }, [projectInfo.plantingArea, calculatePlantsForArea]);
 
-    // Calculate totals
-    const calculateTotals = () => {
+    const { totalPlants, totalByLayer } = React.useMemo(() => {
         let totalPlants = 0;
         let totalByLayer = { canopy: 0, subcanopy: 0, shrub: 0, ground: 0 };
 
@@ -153,40 +126,14 @@ const MiyawakiForestPlanner = () => {
         });
 
         return { totalPlants, totalByLayer };
-    };
+    }, [plants]);
 
-    const { totalPlants, totalByLayer } = calculateTotals();
-    const density = projectInfo.plantingArea && projectInfo.plantingArea > 0 
-        ? (totalPlants / projectInfo.plantingArea).toFixed(2) 
-        : '0.00';
+    const density = projectInfo.plantingArea > 0 ? (totalPlants / projectInfo.plantingArea).toFixed(2) : '0.00';
 
-    // Add new plant species
-    const addNewSpecies = (layer) => {
-        const newPlants = { ...plants };
-        newPlants[layer].unshift({
-            name: 'New Species',
-            count: 10,
-            mature_height: 5,
-            years_to_fruit: 3,
-            harvest_month: 'Unknown'
-        });
-        setPlants(newPlants);
-    };
-
-    // Delete plant species
-    const deleteSpecies = (layer, index) => {
-        const newPlants = { ...plants };
-        newPlants[layer].splice(index, 1);
-        setPlants(newPlants);
-    };
-
-    // Cost calculations
-    const totalCost = () => {
+    const costBreakdown = React.useMemo(() => {
         const plantCost = totalPlants * costs.plantCostPerUnit;
-        const soilCost = (projectInfo.plantingArea && projectInfo.plantingArea > 0) 
-            ? projectInfo.plantingArea * costs.soilAmendmentPerM2 
-            : 0;
-        const laborCost = 10 * costs.laborPerDay; // 10 days initial labor
+        const soilCost = projectInfo.plantingArea > 0 ? projectInfo.plantingArea * costs.soilAmendmentPerM2 : 0;
+        const laborCost = 10 * costs.laborPerDay;
         const threeYearMaintenance = 36 * costs.maintenanceMonthly;
         return {
             plants: plantCost,
@@ -195,38 +142,15 @@ const MiyawakiForestPlanner = () => {
             maintenance: threeYearMaintenance,
             total: plantCost + soilCost + laborCost + threeYearMaintenance
         };
-    };
+    }, [totalPlants, costs, projectInfo.plantingArea]);
 
-    const costBreakdown = totalCost();
+    if (loading) {
+        return <div className="min-h-screen flex items-center justify-center">Loading species data...</div>;
+    }
 
-    // Harvest timeline data
-    const harvestTimeline = () => {
-        const timeline = [];
-        for (let year = 0; year <= 10; year++) {
-            let fruiting = 0;
-            Object.entries(plants).forEach(([, plantList]) => {
-                plantList.forEach(plant => {
-                    if (plant.years_to_fruit > 0 && plant.years_to_fruit <= year) {
-                        fruiting += plant.count;
-                    }
-                });
-            });
-            timeline.push({ year: `Year ${year}`, plants: fruiting });
-        }
-        return timeline;
-    };
-
-    // Pie chart data for species distribution
-    const pieData = Object.entries(totalByLayer).map(([layer, count]) => ({
-        name: layer.charAt(0).toUpperCase() + layer.slice(1),
-        value: count,
-        color: {
-            canopy: '#748873',
-            subcanopy: '#D1A980',
-            shrub: '#E5E0D8',
-            ground: '#F8F8F8'
-        }[layer]
-    }));
+    if (error) {
+        return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-stone-50 via-forest-50 to-earth-50 text-forest-400 p-4">
@@ -244,7 +168,11 @@ const MiyawakiForestPlanner = () => {
                 <div className="bg-gradient-to-br from-white to-stone-50 rounded-xl shadow-medium p-6 border border-stone-200 backdrop-blur-sm">
                     {activeTab === 'overview' && (
                         <Overview
-                            pieData={pieData}
+                            pieData={Object.entries(totalByLayer).map(([layer, count]) => ({
+                                name: layer.charAt(0).toUpperCase() + layer.slice(1),
+                                value: count,
+                                color: { canopy: '#748873', subcanopy: '#D1A980', shrub: '#E5E0D8', ground: '#F8F8F8' }[layer]
+                            }))}
                             projectInfo={projectInfo}
                             setProjectInfo={setProjectInfo}
                             siteInfoConfirmed={siteInfoConfirmed}
@@ -255,20 +183,12 @@ const MiyawakiForestPlanner = () => {
                     {activeTab === 'species' && (
                         <Species
                             plants={plants}
-                            totalByLayer={totalByLayer}
-                            addNewSpecies={addNewSpecies}
                             setPlants={setPlants}
-                            deleteSpecies={deleteSpecies}
-                            speciesSuggestions={speciesSuggestions}
-                            selectedSpecies={selectedSpecies}
-                            setSelectedSpecies={setSelectedSpecies}
-                            speciesSelectionConfirmed={speciesSelectionConfirmed}
-                            setSpeciesSelectionConfirmed={setSpeciesSelectionConfirmed}
-                            transformSpeciesData={transformSpeciesData}
+                            speciesSuggestions={speciesData}
                         />
                     )}
                     {activeTab === 'timeline' && (
-                        <Timeline harvestTimeline={harvestTimeline} plants={plants} />
+                        <Timeline plants={plants} />
                     )}
                     {activeTab === 'costs' && (
                         <Costs
@@ -277,13 +197,10 @@ const MiyawakiForestPlanner = () => {
                             costBreakdown={costBreakdown}
                             totalPlants={totalPlants}
                             projectInfo={projectInfo}
-                            plants={plants}
                         />
                     )}
                     {activeTab === 'blueprint' && <Blueprint totalPlants={totalPlants} />}
                 </div>
-
-
             </div>
         </div>
     );

@@ -1,27 +1,25 @@
-import speciesDatabase from '../data/species-database.json';
-
 /**
  * Utility functions for species database management
  */
 
 // Get available regions
-export const getAvailableRegions = () => {
+export const getAvailableRegions = (speciesDatabase) => {
     return Object.keys(speciesDatabase.regions);
 };
 
 // Get region information
-export const getRegionInfo = (regionId) => {
+export const getRegionInfo = (speciesDatabase, regionId) => {
     return speciesDatabase.regions[regionId];
 };
 
 // Get species by region and layer
-export const getSpeciesByRegionAndLayer = (regionId, layer) => {
+export const getSpeciesByRegionAndLayer = (speciesDatabase, regionId, layer) => {
     const region = speciesDatabase.regions[regionId];
     return region ? region.layers[layer] || [] : [];
 };
 
 // Get all species for a region
-export const getAllSpeciesForRegion = (regionId) => {
+export const getAllSpeciesForRegion = (speciesDatabase, regionId) => {
     const region = speciesDatabase.regions[regionId];
     return region ? region.layers : {};
 };
@@ -72,7 +70,7 @@ export const filterSpecies = (species, criteria) => {
 };
 
 // Get recommended species combinations for balanced ecosystem
-export const getRecommendedCombination = (regionId, preferences = {}) => {
+export const getRecommendedCombination = (speciesDatabase, regionId, preferences = {}) => {
     const region = speciesDatabase.regions[regionId];
     if (!region) return {};
     
@@ -145,12 +143,12 @@ export const transformSpeciesForComponent = (species) => ({
 });
 
 // Get database metadata
-export const getDatabaseMetadata = () => {
+export const getDatabaseMetadata = (speciesDatabase) => {
     return speciesDatabase.metadata;
 };
 
 // Search species by name
-export const searchSpeciesByName = (regionId, searchTerm) => {
+export const searchSpeciesByName = (speciesDatabase, regionId, searchTerm) => {
     const region = speciesDatabase.regions[regionId];
     if (!region) return [];
     

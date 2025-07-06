@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { GiTreeGrowth, GiPlantSeed } from 'react-icons/gi';
 import { FaTrash, FaCheck } from 'react-icons/fa';
 
-const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpecies, onConfirm, transformSpeciesData }) => {
+const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpecies, onConfirm }) => {
     const [tempSelectedSpecies, setTempSelectedSpecies] = useState(selectedSpecies);
 
     const handleSpeciesToggle = (layer, species) => {
@@ -26,35 +25,30 @@ const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpec
     };
 
     const handleConfirmSelection = () => {
-        // Generate random counts for selected species based on Miyawaki principles
         const plantsWithCounts = {};
         
         Object.entries(tempSelectedSpecies).forEach(([layer, species]) => {
             plantsWithCounts[layer] = species.map(spec => {
                 let randomCount;
-                // Assign random counts based on layer and Miyawaki density principles
                 switch(layer) {
                     case 'canopy':
-                        randomCount = Math.floor(Math.random() * 20) + 10; // 10-30 trees
+                        randomCount = Math.floor(Math.random() * 20) + 10;
                         break;
                     case 'subcanopy':
-                        randomCount = Math.floor(Math.random() * 25) + 15; // 15-40 trees
+                        randomCount = Math.floor(Math.random() * 25) + 15;
                         break;
                     case 'shrub':
-                        randomCount = Math.floor(Math.random() * 30) + 20; // 20-50 shrubs
+                        randomCount = Math.floor(Math.random() * 30) + 20;
                         break;
                     case 'ground':
-                        randomCount = Math.floor(Math.random() * 20) + 5; // 5-25 ground plants
+                        randomCount = Math.floor(Math.random() * 20) + 5;
                         break;
                     default:
                         randomCount = Math.floor(Math.random() * 15) + 10;
                 }
                 
-                // Transform the JSON species data to match component expectations
-                const transformedSpec = transformSpeciesData ? transformSpeciesData(spec) : spec;
-                
                 return {
-                    ...transformedSpec,
+                    ...spec,
                     count: randomCount
                 };
             });
@@ -149,51 +143,15 @@ const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpec
     );
 };
 
-const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies, speciesSuggestions, selectedSpecies, setSelectedSpecies, speciesSelectionConfirmed, setSpeciesSelectionConfirmed, transformSpeciesData }) => {
-    // Helper function to format harvest months
-    const formatHarvestMonths = (months) => {
-        if (!months || months.length === 0) return 'N/A';
-        if (months.length > 6) return 'Year-round';
-        return months.join(', ');
-    };
+const Species = ({ plants, setPlants, speciesSuggestions }) => {
+    const [speciesSelectionConfirmed, setSpeciesSelectionConfirmed] = useState(false);
+    const [selectedSpecies, setSelectedSpecies] = useState({ canopy: [], subcanopy: [], shrub: [], ground: [] });
 
-    // Handle species selection from dropdown
-    const handleSpeciesSelection = (layer, index, selectedSpeciesName) => {
-        if (!selectedSpeciesName || selectedSpeciesName === '') return;
-        
-        // Find the selected species in the database
-        const layerSpecies = speciesSuggestions[layer] || [];
-        const selectedSpec = layerSpecies.find(spec => spec.name === selectedSpeciesName);
-        
-        if (selectedSpec) {
-            // Transform the database species to match component format
-            const transformedSpec = transformSpeciesData ? transformSpeciesData(selectedSpec) : selectedSpec;
-            
-            // Update the plant with database values
-            const newPlants = { ...plants };
-            newPlants[layer][index] = {
-                ...newPlants[layer][index],
-                name: transformedSpec.name,
-                mature_height: transformedSpec.mature_height,
-                years_to_fruit: transformedSpec.years_to_fruit,
-                harvest_month: transformedSpec.harvest_month,
-                scientific_name: transformedSpec.scientific_name,
-                native: transformedSpec.native,
-                economic_value: transformedSpec.economic_value,
-                uses: transformedSpec.uses,
-                nutritional_benefits: transformedSpec.nutritional_benefits,
-                price: transformedSpec.price || 60 // Default price if not in database
-            };
-            setPlants(newPlants);
-        }
-    };
-    
     const handleConfirmSpeciesSelection = (plantsWithCounts) => {
         setPlants(plantsWithCounts);
         setSpeciesSelectionConfirmed(true);
     };
 
-    // Show species selection if not confirmed yet
     if (!speciesSelectionConfirmed) {
         return (
             <SpeciesSelection
@@ -201,17 +159,47 @@ const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies
                 selectedSpecies={selectedSpecies}
                 setSelectedSpecies={setSelectedSpecies}
                 onConfirm={handleConfirmSpeciesSelection}
-                transformSpeciesData={transformSpeciesData}
             />
         );
     }
-
-    // Show species management dashboard after confirmation
 
     const updatePlantProperty = (layer, index, property, value) => {
         const newPlants = { ...plants };
         newPlants[layer][index][property] = value;
         setPlants(newPlants);
+    };
+
+    const addNewSpecies = (layer) => {
+        const newPlants = { ...plants };
+        newPlants[layer].unshift({
+            name: 'New Species',
+            count: 10,
+            mature_height: 5,
+            years_to_fruit: 3,
+            harvest_month: 'Unknown'
+        });
+        setPlants(newPlants);
+    };
+
+    const deleteSpecies = (layer, index) => {
+        const newPlants = { ...plants };
+        newPlants[layer].splice(index, 1);
+        setPlants(newPlants);
+    };
+
+    const handleSpeciesChange = (layer, index, selectedSpeciesName) => {
+        if (!selectedSpeciesName) return;
+
+        const selectedSpec = speciesSuggestions[layer].find(spec => spec.name === selectedSpeciesName);
+        if (selectedSpec) {
+            const newPlants = { ...plants };
+            newPlants[layer][index] = {
+                ...newPlants[layer][index],
+                ...selectedSpec,
+                count: newPlants[layer][index].count, // Keep existing count
+            };
+            setPlants(newPlants);
+        }
     };
 
     return (
@@ -223,7 +211,7 @@ const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-semibold capitalize flex items-center text-green-800" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
                         <GiTreeGrowth className="mr-3 text-green-600" size={24} />
-                        {layer} Layer ({totalByLayer[layer]} plants)
+                        {layer} Layer ({plantList.reduce((acc, p) => acc + p.count, 0)} plants)
                     </h3>
                     <button
                         onClick={() => addNewSpecies(layer)}
@@ -254,7 +242,7 @@ const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies
                                         {plant.name === 'New Species' ? (
                                             <select
                                                 value=""
-                                                onChange={(e) => handleSpeciesSelection(layer, index, e.target.value)}
+                                                onChange={(e) => handleSpeciesChange(layer, index, e.target.value)}
                                                 className="w-full px-3 py-2 border-2 border-green-300 rounded-lg text-green-900 focus:border-green-500 focus:outline-none font-medium"
                                                 style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
                                             >
@@ -309,11 +297,11 @@ const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies
                                     <td className="p-4">
                                         <input
                                             type="text"
-                                            value={plant.harvest_month || 'N/A'}
-                                            onChange={(e) => updatePlantProperty(layer, index, 'harvest_month', e.target.value)}
+                                            value={plant.harvest_months ? plant.harvest_months.join(', ') : 'N/A'}
+                                            onChange={(e) => updatePlantProperty(layer, index, 'harvest_months', e.target.value.split(',').map(m => m.trim()))}
                                             className="w-full px-3 py-2 border-2 border-green-300 rounded-lg text-green-900 focus:border-green-500 focus:outline-none font-medium"
                                             style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}
-                                            placeholder="e.g., June, July, August or Year-round"
+                                            placeholder="e.g., June, July, August"
                                         />
                                     </td>
                                     <td className="p-4">
@@ -327,9 +315,6 @@ const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies
                                                 min="0"
                                             />
                                         </div>
-                                        <p className="text-xs text-green-600 mt-1" style={{ fontFamily: 'Crimson Pro, Georgia, serif' }}>
-                                            {plant.price && plant.price > 60 ? 'Database price' : 'Default price'}
-                                        </p>
                                     </td>
                                     <td className="p-4 text-center">
                                         <button
