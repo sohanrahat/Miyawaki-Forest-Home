@@ -8,67 +8,25 @@ import Timeline from './components/Timeline';
 import Costs from './components/Costs';
 import Blueprint from './components/Blueprint';
 import Export from './components/Export';
+import speciesDatabase from './data/species-database.json';
 
 const MiyawakiForestPlanner = () => {
-    // Species suggestions database for user selection
-    const speciesSuggestions = {
-        canopy: [
-            { name: 'Mango (Am)', years_to_fruit: 5, harvest_month: 'June-Aug', mature_height: 20 },
-            { name: 'Jackfruit (Kathal)', years_to_fruit: 7, harvest_month: 'June-Sept', mature_height: 18 },
-            { name: 'Coconut (Narikel)', years_to_fruit: 6, harvest_month: 'Year-round', mature_height: 15 },
-            { name: 'Jamun', years_to_fruit: 8, harvest_month: 'May-July', mature_height: 20 },
-            { name: 'Tamarind (Tetul)', years_to_fruit: 10, harvest_month: 'Feb-Mar', mature_height: 18 },
-            { name: 'Mahogany', years_to_fruit: 0, harvest_month: 'N/A', mature_height: 25 },
-            { name: 'Neem', years_to_fruit: 0, harvest_month: 'N/A', mature_height: 20 },
-            { name: 'Rain Tree', years_to_fruit: 0, harvest_month: 'N/A', mature_height: 25 },
-            { name: 'Hijol', years_to_fruit: 0, harvest_month: 'N/A', mature_height: 15 },
-            { name: 'Bamboo', years_to_fruit: 0, harvest_month: 'N/A', mature_height: 20 },
-            { name: 'Teak', years_to_fruit: 0, harvest_month: 'N/A', mature_height: 30 },
-            { name: 'Sal', years_to_fruit: 0, harvest_month: 'N/A', mature_height: 25 }
-        ],
-        subcanopy: [
-            { name: 'Guava (Peyara)', years_to_fruit: 3, harvest_month: 'July-Sept', mature_height: 8 },
-            { name: 'Litchi', years_to_fruit: 5, harvest_month: 'June-July', mature_height: 10 },
-            { name: 'Cashew (Kaju)', years_to_fruit: 4, harvest_month: 'Mar-May', mature_height: 9 },
-            { name: 'Custard Apple', years_to_fruit: 4, harvest_month: 'Aug-Oct', mature_height: 6 },
-            { name: 'Star Fruit', years_to_fruit: 3, harvest_month: 'Nov-Jan', mature_height: 7 },
-            { name: 'Sapota', years_to_fruit: 5, harvest_month: 'May-Sept', mature_height: 8 },
-            { name: 'Moringa (Sajina)', years_to_fruit: 1, harvest_month: 'Year-round', mature_height: 6 },
-            { name: 'Papaya', years_to_fruit: 1, harvest_month: 'Year-round', mature_height: 5 },
-            { name: 'Banana', years_to_fruit: 1, harvest_month: 'Year-round', mature_height: 4 },
-            { name: 'Drumstick', years_to_fruit: 2, harvest_month: 'Feb-Apr', mature_height: 8 },
-            { name: 'Curry Leaf', years_to_fruit: 2, harvest_month: 'Year-round', mature_height: 4 },
-            { name: 'Pomegranate', years_to_fruit: 3, harvest_month: 'Oct-Feb', mature_height: 6 }
-        ],
-        shrub: [
-            { name: 'Indian Jujube (Boroi)', years_to_fruit: 2, harvest_month: 'Feb-Mar', mature_height: 3 },
-            { name: 'Indian Gooseberry', years_to_fruit: 3, harvest_month: 'Oct-Jan', mature_height: 3 },
-            { name: 'Mulberry', years_to_fruit: 2, harvest_month: 'Mar-May', mature_height: 3 },
-            { name: 'Rose Apple', years_to_fruit: 3, harvest_month: 'May-June', mature_height: 3 },
-            { name: 'Chili varieties', years_to_fruit: 0.5, harvest_month: 'Year-round', mature_height: 1 },
-            { name: 'Brinjal (Eggplant)', years_to_fruit: 0.5, harvest_month: 'Year-round', mature_height: 1 },
-            { name: 'Okra (Bhindi)', years_to_fruit: 0.3, harvest_month: 'Summer', mature_height: 1.5 },
-            { name: 'Tomato', years_to_fruit: 0.3, harvest_month: 'Winter', mature_height: 1 },
-            { name: 'Lemon/Lime', years_to_fruit: 3, harvest_month: 'Year-round', mature_height: 2.5 },
-            { name: 'Tulsi (Holy Basil)', years_to_fruit: 0.2, harvest_month: 'Year-round', mature_height: 0.5 },
-            { name: 'Aloe Vera', years_to_fruit: 0, harvest_month: 'N/A', mature_height: 0.5 },
-            { name: 'Hibiscus', years_to_fruit: 1, harvest_month: 'Year-round', mature_height: 2 }
-        ],
-        ground: [
-            { name: 'Spinach varieties', years_to_fruit: 0.2, harvest_month: 'Winter', mature_height: 0.3 },
-            { name: 'Amaranth (Lal Shak)', years_to_fruit: 0.2, harvest_month: 'Year-round', mature_height: 0.4 },
-            { name: 'Bottle Gourd leaves', years_to_fruit: 0.3, harvest_month: 'Summer', mature_height: 0.3 },
-            { name: 'Water Spinach', years_to_fruit: 0.2, harvest_month: 'Monsoon', mature_height: 0.3 },
-            { name: 'Ginger', years_to_fruit: 0.8, harvest_month: 'Oct-Dec', mature_height: 0.5 },
-            { name: 'Turmeric', years_to_fruit: 0.8, harvest_month: 'Jan-Mar', mature_height: 0.5 },
-            { name: 'Coriander', years_to_fruit: 0.2, harvest_month: 'Winter', mature_height: 0.3 },
-            { name: 'Mint', years_to_fruit: 0.2, harvest_month: 'Year-round', mature_height: 0.3 },
-            { name: 'Sweet Potato', years_to_fruit: 0.5, harvest_month: 'Oct-Dec', mature_height: 0.3 },
-            { name: 'Pumpkin', years_to_fruit: 0.3, harvest_month: 'Winter', mature_height: 0.3 },
-            { name: 'Cucumber', years_to_fruit: 0.2, harvest_month: 'Summer', mature_height: 0.3 },
-            { name: 'Radish', years_to_fruit: 0.2, harvest_month: 'Winter', mature_height: 0.2 }
-        ]
-    };
+    // Load species data from JSON database (defaulting to Bangladesh region)
+    const currentRegion = 'bangladesh';
+    const speciesSuggestions = speciesDatabase.regions[currentRegion].layers;
+    
+    // Transform JSON data to match component expectations
+    const transformSpeciesData = (species) => ({
+        name: species.name,
+        years_to_fruit: species.years_to_fruit,
+        harvest_month: species.harvest_months.length > 0 ? species.harvest_months.join(', ') : 'N/A',
+        mature_height: species.mature_height,
+        scientific_name: species.scientific_name,
+        native: species.native,
+        economic_value: species.economic_value,
+        uses: species.uses,
+        nutritional_benefits: species.nutritional_benefits
+    });
 
     // Species selection state
     const [selectedSpecies, setSelectedSpecies] = useState({
@@ -272,6 +230,7 @@ const MiyawakiForestPlanner = () => {
                             setSelectedSpecies={setSelectedSpecies}
                             speciesSelectionConfirmed={speciesSelectionConfirmed}
                             setSpeciesSelectionConfirmed={setSpeciesSelectionConfirmed}
+                            transformSpeciesData={transformSpeciesData}
                         />
                     )}
                     {activeTab === 'timeline' && (

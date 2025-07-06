@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { GiTreeGrowth, GiPlantSeed } from 'react-icons/gi';
 import { FaTrash, FaCheck } from 'react-icons/fa';
 
-const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpecies, onConfirm }) => {
+const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpecies, onConfirm, transformSpeciesData }) => {
     const [tempSelectedSpecies, setTempSelectedSpecies] = useState(selectedSpecies);
 
     const handleSpeciesToggle = (layer, species) => {
@@ -50,8 +50,11 @@ const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpec
                         randomCount = Math.floor(Math.random() * 15) + 10;
                 }
                 
+                // Transform the JSON species data to match component expectations
+                const transformedSpec = transformSpeciesData ? transformSpeciesData(spec) : spec;
+                
                 return {
-                    ...spec,
+                    ...transformedSpec,
                     count: randomCount
                 };
             });
@@ -146,7 +149,7 @@ const SpeciesSelection = ({ speciesSuggestions, selectedSpecies, setSelectedSpec
     );
 };
 
-const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies, speciesSuggestions, selectedSpecies, setSelectedSpecies, speciesSelectionConfirmed, setSpeciesSelectionConfirmed }) => {
+const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies, speciesSuggestions, selectedSpecies, setSelectedSpecies, speciesSelectionConfirmed, setSpeciesSelectionConfirmed, transformSpeciesData }) => {
     
     const handleConfirmSpeciesSelection = (plantsWithCounts) => {
         setPlants(plantsWithCounts);
@@ -161,6 +164,7 @@ const Species = ({ plants, totalByLayer, addNewSpecies, setPlants, deleteSpecies
                 selectedSpecies={selectedSpecies}
                 setSelectedSpecies={setSelectedSpecies}
                 onConfirm={handleConfirmSpeciesSelection}
+                transformSpeciesData={transformSpeciesData}
             />
         );
     }
